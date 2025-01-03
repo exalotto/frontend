@@ -1,3 +1,5 @@
+import type { PropsWithChildren } from 'react';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -48,12 +50,13 @@ const navigationMenuItems = [
   },
 ];
 
-interface NavigationMenuItemProps extends React.PropsWithChildren {
+const NavigationMenuItem = ({
+  caption,
+  target,
+}: PropsWithChildren & {
   caption: string;
   target: string;
-}
-
-const NavigationMenuItem = ({ caption, target }: NavigationMenuItemProps) => {
+}) => {
   const pathname = usePathname();
   const active = pathname === target;
   return (

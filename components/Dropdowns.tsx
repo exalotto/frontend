@@ -1,15 +1,20 @@
+import type { PropsWithChildren } from 'react';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { Dropdown as BSDropdown } from 'react-bootstrap';
 
-export interface DropdownProps extends React.PropsWithChildren {
+export const Dropdown = ({
+  variant,
+  text,
+  onSelect,
+  children,
+}: PropsWithChildren & {
   variant: string;
   text: string;
-  onSelect(): void;
-}
-
-export const Dropdown = ({ variant, text, onSelect, children }: DropdownProps) => (
+  onSelect: () => void;
+}) => (
   <div className={`main-dropdown ${variant && `main-dropdown--${variant}`}`}>
     <BSDropdown className="main-dropdown__wrap" onSelect={onSelect}>
       <BSDropdown.Toggle as="button" className="btn" type="button">
@@ -23,12 +28,14 @@ export const Dropdown = ({ variant, text, onSelect, children }: DropdownProps) =
   </div>
 );
 
-export interface DropdownItemProps extends React.PropsWithChildren {
+const DropdownItem = ({
+  text,
+  active,
+  ...rest
+}: PropsWithChildren & {
   text: string;
   active: boolean;
-}
-
-const DropdownItem = ({ text, active, ...rest }: DropdownItemProps) => (
+}) => (
   <li>
     <BSDropdown.Item className={active ? 'dropdown-item--active' : ''} {...rest}>
       {text}
@@ -38,11 +45,7 @@ const DropdownItem = ({ text, active, ...rest }: DropdownItemProps) => (
 
 Dropdown.Item = DropdownItem;
 
-export interface MenuDropdownProps extends React.PropsWithChildren {
-  text: string;
-}
-
-export const MenuDropdown = ({ text, children }: MenuDropdownProps) => (
+export const MenuDropdown = ({ text, children }: PropsWithChildren & { text: string }) => (
   <div className="menu-dropdown">
     <BSDropdown className="menu-dropdown__wrap">
       <BSDropdown.Toggle as="button" className="btn" type="button">
@@ -54,12 +57,7 @@ export const MenuDropdown = ({ text, children }: MenuDropdownProps) => (
   </div>
 );
 
-export interface MenuItemProps extends React.PropsWithChildren {
-  text: string;
-  target: string;
-}
-
-const MenuItem = ({ text, target }: MenuItemProps) => {
+const MenuItem = ({ text, target }: PropsWithChildren & { text: string; target: string }) => {
   const pathname = usePathname();
   const active = pathname === target;
   return (

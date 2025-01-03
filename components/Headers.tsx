@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { Container } from 'react-bootstrap';
 
 import logoImage from '@/images/logo.png';
+
+import { ConnectButton } from './Connection';
 import { DropdownNavigationMenu, NavigationMenu } from './Navigation';
 
 const Logo = () => (
@@ -28,7 +30,7 @@ export const Header = () => (
         <Logo />
         <NavigationMenu />
         <DropdownNavigationMenu />
-        {/* TODO: ConnectButton */}
+        <ConnectButton />
       </div>
       <MainSection />
     </Container>
