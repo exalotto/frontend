@@ -1,0 +1,204 @@
+.header-out {
+    position: relative;
+    background: top repeat-x url("../../images/bg.jpg");
+    height: 1008px;
+    border-bottom: 7px solid #fff;
+    box-shadow: 0px 22px 51px 0px rgba(134, 203, 255, 0.74);
+    z-index: 1;
+
+    > .container {
+        position: relative;
+        padding-bottom: 36px;
+    }
+    &--article {
+        height: 150px;
+        .header {
+            margin-bottom: 0;
+        }
+        > .container {
+            padding-bottom: 14px;
+        }
+    }
+}
+
+.header {
+    padding-top: 41px;
+    margin-bottom: 55px;
+}
+
+.logo {
+    text-decoration: none;
+    margin-top: 5px;
+    letter-spacing: -0.01em;
+    &__img {
+        margin-right: 18px;
+    }
+    &__text {
+        font-size: 34px;
+        color: #fff;
+        position: relative;
+        top: 2px;
+    }
+    &__text-colored {
+        color: #42f4ff;
+    }
+}
+
+.top-menu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    list-style: none;
+    padding: 20px 0 0 0;
+    margin: 0;
+    &__item {
+        margin-left: 50px;
+        position: relative;
+        &:first-child {
+            margin-left: 0;
+        }
+        &::before {
+            content: "";
+            position: absolute;
+            top: 11px;
+            left: -29px;
+            width: 5px;
+            height: 5px;
+            background-color: #6dc6ff;
+            transform: rotate(45deg);
+        }
+        &:first-child::before {
+            display: none;
+        }
+        &--active {
+            .top-menu__link,
+            .top-menu__line {
+                &::before,
+                &::after {
+                    background-color: #fff600;
+                }
+            }
+            .top-menu__text-el {
+                color: #fff600;
+            }
+        }
+    }
+    &__link,
+    &__line {
+        &::before,
+        &::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+
+            background-color: transparent;
+        }
+    }
+    &__link {
+        text-decoration: none;
+        position: relative;
+        &::before {
+            left: 0;
+            width: 4px;
+            height: 4px;
+            bottom: -11px;
+        }
+        &::after {
+            left: 0;
+            height: 2px;
+            width: 100%;
+            bottom: -10px;
+        }
+    }
+    &__line {
+        width: 50%;
+        position: absolute;
+        bottom: -18px;
+        right: 25%;
+        &::before {
+            width: 4px;
+            height: 4px;
+            bottom: -1px;
+            right: 0;
+        }
+        &::after {
+            height: 2px;
+            width: 100%;
+        }
+    }
+    &__text-el {
+        font-size: 18px;
+        color: #fff;
+        font-weight: 600;
+        position: relative;
+        letter-spacing: -0.01em;
+    }
+}
+
+@include media-breakpoint-up(sm) {
+    .header-out {
+        height: 879px;
+        &--article {
+            height: 150px;
+        }
+    }
+}
+@include media-breakpoint-up(md) {
+    .header-out {
+        height: 557px;
+        &--article {
+            height: 150px;
+        }
+    }
+}
+@include media-breakpoint-up(lg) {
+    .header {
+        padding-top: 40px;
+        margin-bottom: 64px;
+    }
+    .header-out {
+        height: 447px;
+        &--article {
+            height: 150px;
+        }
+    }
+    .top-menu {
+        &__item {
+            margin-left: 38px;
+            &::before {
+                left: -21px;
+            }
+        }
+        &__text-el {
+            font-size: 16px;
+        }
+    }
+}
+@include media-breakpoint-up(xxl) {
+    .header {
+        margin-bottom: 83px;
+    }
+
+    .logo {
+        &__img {
+            margin-right: 12px;
+        }
+    }
+    .header-out {
+        height: 556px;
+        &--article {
+            height: 150px;
+        }
+    }
+    .top-menu {
+        &__item {
+            margin-left: 50px;
+            &::before {
+                left: -29px;
+            }
+        }
+        &__text-el {
+            font-size: 18px;
+        }
+    }
+}

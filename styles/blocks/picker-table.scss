@@ -1,0 +1,156 @@
+.picker-table {
+    display: flex;
+    flex-wrap: wrap;
+    &__item {
+        flex-grow: 0;
+        width: 40px;
+        height: 38px;
+        position: relative;
+        &:before {
+            content: "";
+            position: absolute;
+            height: 1px;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+            background-image: linear-gradient(to right, #8fd1fe 33%, rgba(255, 255, 255, 0) 0%);
+            background-position: bottom;
+            background-size: 7px 1px;
+            background-repeat: repeat-x;
+        }
+        &:after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 1px;
+            background-image: linear-gradient(#8fd1fe 33%, rgba(255, 255, 255, 0) 0%);
+            background-position: right;
+            background-size: 1px 7px;
+            background-repeat: repeat-y;
+        }
+        &:nth-child(10n + 1) {
+            .picker-table__item-in {
+                &::after {
+                    content: "";
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    height: 100%;
+                    width: 1px;
+                    background-image: linear-gradient(#8fd1fe 33%, rgba(255, 255, 255, 0) 0%);
+                    background-position: right;
+                    background-size: 1px 7px;
+                    background-repeat: repeat-y;
+                }
+            }
+        }
+
+        .picker-table__item-in {
+            &::before {
+                content: "";
+                position: absolute;
+                height: 1px;
+                width: 100%;
+                top: 0;
+                left: 0;
+                background-image: linear-gradient(to right, #8fd1fe 33%, rgba(255, 255, 255, 0) 0%);
+                background-position: bottom;
+                background-size: 7px 1px;
+                background-repeat: repeat-x;
+            }
+        }
+        & + span + span + span + span + span + span + span + span + span + span {
+            .picker-table__item-in::before {
+                display: none;
+            }
+        }
+        &--active,
+        &:hover {
+            .picker-table__text {
+                font-size: 24px;
+                font-weight: bold;
+                color: #fff;
+                z-index: 2;
+                &::before {
+                    transform: scale(1.15);
+                    background-color: #837aff;
+                    box-shadow: 0px 9px 21px 0px rgba(149, 141, 255, 0.5);
+                }
+            }
+        }
+    }
+    &__item-in {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+
+    &__text {
+        position: relative;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        justify-content: center;
+        align-items: center;
+        color: #c8e8ff;
+        font-weight: 600;
+        cursor: pointer;
+        line-height: 1;
+        font-size: 20px;
+        transition: all 0.1s ease-in-out;
+        &::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            z-index: -1;
+            transition: background-color, transform 0.1s ease-in-out;
+            box-shadow: 0px 9px 21px 0px rgba(149, 141, 255, 0);
+        }
+    }
+}
+
+@include media-breakpoint-only(lg) {
+    .picker-table {
+        &__item {
+            width: 31px;
+            height: 30px;
+            &--active,
+            &:hover {
+                .picker-table__text {
+                    font-size: 18px;
+                    &::before {
+                        transform: scale(1.15);
+                    }
+                }
+            }
+        }
+        &__text {
+            font-size: 15px;
+        }
+    }
+}
+@include media-breakpoint-only(xl) {
+    .picker-table {
+        &__item {
+            width: 35px;
+            height: 33px;
+            &--active,
+            &:hover {
+                .picker-table__text {
+                    font-size: 20px;
+                    &::before {
+                        transform: scale(1.15);
+                    }
+                }
+            }
+        }
+        &__text {
+            font-size: 17px;
+        }
+    }
+}

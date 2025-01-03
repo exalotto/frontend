@@ -1,0 +1,235 @@
+.two-rows-title {
+    top: -33px;
+    position: relative;
+    display: inline-block;
+    &__top-frame {
+        opacity: 0.6;
+        box-shadow: 0px 9px 24px 0px rgba(126, 199, 255, 0.35);
+    }
+    &__top-frame-clip {
+        background-color: rgba(255, 255, 255, 0.9);
+        height: 33px;
+        width: 316px;
+        clip-path: polygon(0 21px, 21px 0, 100% 0, 100% 100%, 0 100%);
+    }
+    &__frame {
+        margin-top: -28px;
+        filter: drop-shadow(0px 9px 24px rgba(126, 199, 255, 0.35));
+    }
+    &__frame-in {
+        text-align: center;
+        height: 57px;
+        width: 306px;
+        margin: 0 5px;
+        padding: 13px 0 0;
+        background-color: rgba(255, 255, 255, 0.9);
+        clip-path: polygon(
+            19px 0,
+            100% 0,
+            100% 34px,
+            291px 49px,
+            236px 49px,
+            228px 57px,
+            89px 57px,
+            82px 49px,
+            0 49px,
+            0 19px
+        );
+    }
+    &__main-text {
+        line-height: 1;
+        font-weight: 700;
+        color: #458abe;
+        font-size: 18px;
+        margin-bottom: 3px;
+    }
+    &__sub-text {
+        line-height: 1;
+        font-weight: 700;
+        color: #88b3d3;
+        font-size: 14px;
+    }
+}
+
+.one-row-title {
+    top: -21px;
+    position: relative;
+    display: inline-block;
+    padding: 5px 5px 0;
+    &__top-frame {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        opacity: 0.6;
+        box-shadow: 0px 9px 24px 0px rgba(126, 199, 255, 0.35);
+    }
+    &__top-frame-clip {
+        height: 21px;
+        background-color: rgba(255, 255, 255, 0.9);
+        clip-path: polygon(0 10px, 10px 0, 100% 0, 100% 100%, 0 100%);
+    }
+    &__frame {
+        filter: drop-shadow(0px 9px 24px rgba(126, 199, 255, 0.35));
+    }
+    &__frame-in {
+        text-align: center;
+        height: 32px;
+        width: 171px;
+        padding: 8px 0 0;
+        background-color: rgba(255, 255, 255, 0.9);
+        clip-path: polygon(5% 0, 100% 0, 100% 69%, 93% 100%, 0 100%, 0 28%);
+    }
+    &__main-text {
+        line-height: 1;
+        font-weight: 700;
+        color: #458abe;
+        font-size: 16px;
+    }
+}
+
+// only
+@include media-breakpoint-only(sm) {
+    .one-row-title {
+        &__main-text {
+            font-size: 14px;
+        }
+    }
+}
+@include media-breakpoint-only(md) {
+    .one-row-title {
+        &__frame-in {
+            width: 155px;
+        }
+        &__main-text {
+            font-size: 14px;
+        }
+    }
+}
+@include media-breakpoint-only(lg) {
+    .one-row-title {
+        top: -24px;
+        &__frame-in {
+            width: 184px;
+        }
+        &__top-frame-clip {
+            height: 24px;
+        }
+        &__main-text {
+            font-size: 14px;
+        }
+    }
+
+    .two-rows-title {
+        top: -24px;
+
+        &__top-frame-clip {
+            height: 24px;
+            width: 257px;
+            clip-path: polygon(0 20px, 20px 0, 100% 0, 100% 100%, 0 100%);
+        }
+        &__frame {
+            margin-top: -19px;
+        }
+        &__frame-in {
+            height: 40px;
+            width: 247px;
+            margin: 0 5px;
+            padding: 6px 0 0;
+            clip-path: polygon(
+                16px 0,
+                100% 0,
+                100% 20px,
+                233px 32px,
+                198px 32px,
+                190px 40px,
+                70px 40px,
+                62px 32px,
+                0 32px,
+                0 16px
+            );
+        }
+        &__main-text {
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        &__sub-text {
+            font-size: 11px;
+        }
+    }
+}
+@include media-breakpoint-only(xl) {
+    .one-row-title {
+        top: -24px;
+        &__frame-in {
+            width: 184px;
+            height: 44px;
+            padding: 13px 0 0;
+            clip-path: polygon(9% 0, 100% 0, 100% 69%, 93% 100%, 0 100%, 0 37%) !important;
+        }
+        &__top-frame-clip {
+            height: 24px;
+            clip-path: polygon(0 20px, 20px 0, 100% 0, 100% 100%, 0 100%) !important;
+        }
+        &__main-text {
+            font-size: 16px;
+        }
+    }
+
+    .two-rows-title {
+        top: -23px;
+
+        &__top-frame-clip {
+            height: 23px;
+            width: 277px;
+            clip-path: polygon(0 20px, 20px 0, 100% 0, 100% 100%, 0 100%);
+        }
+        &__frame {
+            margin-top: -18px;
+        }
+        &__frame-in {
+            height: 50px;
+            width: 267px;
+            margin: 0 5px;
+            padding: 10px 0 0;
+            clip-path: polygon(
+                16px 0,
+                100% 0,
+                100% 30px,
+                253px 43px,
+                207px 43px,
+                200px 50px,
+                80px 50px,
+                72px 43px,
+                0 43px,
+                0 16px
+            );
+        }
+        &__main-text {
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+        &__sub-text {
+            font-size: 12px;
+        }
+    }
+}
+
+@include media-breakpoint-up(xxl) {
+    .one-row-title {
+        top: -34px;
+        &__frame-in {
+            height: 49px;
+            width: 230px;
+            padding: 15px 0 0;
+            clip-path: polygon(9% 0, 100% 0, 100% 69%, 93% 100%, 0 100%, 0 37%) !important;
+        }
+        &__top-frame-clip {
+            height: 34px;
+            clip-path: polygon(0 20px, 20px 0, 100% 0, 100% 100%, 0 100%) !important;
+        }
+        &__main-text {
+            font-size: 18px;
+        }
+    }
+}

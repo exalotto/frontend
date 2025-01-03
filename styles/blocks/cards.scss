@@ -1,0 +1,536 @@
+.past-draws {
+    padding-top: 60px;
+    &__content {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+    &__title-out {
+        text-align: center;
+    }
+    &__title {
+        display: inline-block;
+        font-size: 25px;
+        font-weight: bold;
+        color: #666;
+        line-height: 1;
+        margin-bottom: 41px;
+        letter-spacing: -0.01em;
+        padding: 0 104px;
+        position: relative;
+    }
+    &__title-line {
+        position: absolute;
+        background-color: #9bd7ff;
+        width: 66px;
+        height: 2px;
+        top: 50%;
+        margin-top: -3px;
+        &::before {
+            content: "";
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: #9bd7ff;
+            right: -4px;
+            top: -1px;
+        }
+        > span {
+            position: absolute;
+            background-color: #9bd7ff;
+            width: 38px;
+            height: 2px;
+            top: 0;
+            left: -62px;
+            &::before {
+                content: "";
+                position: absolute;
+                background-color: #9bd7ff;
+                width: 16px;
+                height: 2px;
+                top: 0;
+                left: -28px;
+            }
+        }
+
+        &--left {
+            right: 100%;
+        }
+        &--right {
+            left: 100%;
+            transform: rotate(180deg);
+        }
+    }
+    &__descr {
+        font-size: 18px;
+        letter-spacing: -0.01em;
+        line-height: 30px;
+        color: #666;
+        font-weight: 600;
+    }
+}
+
+.draws {
+    margin-bottom: 50px;
+    &__item {
+        width: 320px;
+        padding: 8px;
+        background-color: #e5f6ff;
+        margin-bottom: 56px;
+
+        &--empty {
+            .draws__buttons {
+                bottom: -28px;
+            }
+        }
+    }
+    &__frame {
+        position: relative;
+    }
+    &__date {
+        color: #88b3d3;
+        font-weight: bold;
+        font-size: 14px;
+        line-height: 1;
+        letter-spacing: -0.01em;
+        padding: 3px 0 0 5px;
+        position: absolute;
+    }
+    &__main-shadow {
+        filter: drop-shadow(0px 19px 35px rgba(126, 199, 255, 0.39));
+        position: relative;
+    }
+    &__main {
+        min-height: 330px;
+        padding: 45px 0 0 0;
+        background-color: #fff;
+        clip-path: polygon(82px 0, 100% 0, 100% 100%, 0 100%, 0 25px, 64px 25px);
+    }
+
+    &__jackpot {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 35px;
+    }
+    &__jackpot-frame {
+        width: 262px;
+        height: 92px;
+        background-position: 0 -3809px;
+        position: relative;
+        padding-top: 26px;
+    }
+    &__jackpot-title {
+        position: absolute;
+        top: -13px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        color: #458abe;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: -0.01em;
+    }
+    &__jackpot-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-top: 4px;
+    }
+    &__jackpot-select {
+        margin-right: 12px;
+    }
+    &__jackpot-number {
+        color: #666;
+        font-weight: bold;
+        font-size: 30px;
+        line-height: 1;
+    }
+    &__buttons {
+        position: absolute;
+        text-align: center;
+        bottom: -19px;
+        width: 100%;
+    }
+}
+
+.card-section {
+    margin-bottom: 22px;
+    &__out {
+        padding-bottom: 19px;
+    }
+    &__title {
+        text-align: center;
+        font-size: 16px;
+        color: #97bcd9;
+        font-weight: bold;
+        letter-spacing: -0.01em;
+        line-height: 1;
+        margin-bottom: 6px;
+    }
+    &__body {
+        text-align: center;
+    }
+    &__item {
+        width: 37px;
+        height: 35px;
+        margin-top: 2px;
+        margin-left: 2px;
+        background-color: #837aff;
+        display: inline-block;
+        line-height: 35px;
+        vertical-align: middle;
+        font-size: 24px;
+        font-weight: bold;
+        color: #fff;
+        letter-spacing: -0.025em;
+        cursor: default;
+        &--selected {
+            background-color: #18d944;
+        }
+    }
+}
+
+.prize {
+    min-height: 192px;
+    letter-spacing: -0.01em;
+    text-align: center;
+    color: #458abe;
+    font-weight: bold;
+    line-height: 1;
+    padding: 17px 10px 10px;
+    clip-path: polygon(0 9%, 23% 9%, 24% 0, 76% 0, 77% 9%, 100% 9%, 100% 100%, 0 100%);
+    box-shadow: inset 0 9px 7px rgba(32, 164, 254, 0.09);
+    background: rgb(206, 237, 255);
+    background: linear-gradient(
+        180deg,
+        rgba(206, 237, 255, 1) 0%,
+        rgba(229, 247, 255, 1) 30%,
+        rgba(255, 255, 255, 1) 100%
+    );
+    &--empty {
+        padding: 65px 10px 0;
+        text-align: center;
+        .prize__text {
+            color: #1fc1f4;
+
+            font-size: 67px;
+            opacity: 0.15;
+            text-transform: uppercase;
+        }
+    }
+
+    &__title {
+        font-size: 16px;
+        text-transform: uppercase;
+        margin-bottom: 22px;
+    }
+    &__count {
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    &__line {
+        position: absolute;
+        background-color: #9bd7ff;
+        width: 28px;
+        height: 2px;
+        top: 50%;
+        margin-top: -3px;
+        &::before {
+            content: "";
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: #9bd7ff;
+            right: -4px;
+            top: -1px;
+        }
+        &--left {
+            right: 100%;
+        }
+        &--right {
+            left: 100%;
+            transform: rotate(180deg);
+        }
+    }
+
+    &__count-text {
+        font-size: 32px;
+        color: #229dfd;
+        min-width: 265px;
+        position: relative;
+    }
+    &__transaction {
+        font-size: 16px;
+        margin-bottom: 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 0px 68px;
+    }
+    &__match {
+        font-size: 16px;
+    }
+}
+
+@include media-breakpoint-up(lg) {
+    .past-draws {
+        padding-top: 100px;
+        &__content {
+            margin-bottom: 58px;
+        }
+    }
+    .draws {
+        &__item {
+            width: 313px;
+            margin-left: 10px;
+            &:nth-child(3n + 1) {
+                margin-left: 0;
+            }
+        }
+    }
+}
+@include media-breakpoint-up(xl) {
+    .past-draws {
+        padding-top: 143px;
+    }
+    .draws {
+        &__item {
+            width: 370px;
+            margin-left: 15px;
+            &:nth-child(3n + 1) {
+                margin-left: 0;
+            }
+        }
+    }
+}
+@include media-breakpoint-up(xxl) {
+    .draws {
+        margin-bottom: 200px;
+        &__item {
+            width: 424px;
+            padding: 8px;
+            background-color: #e5f6ff;
+            margin-left: 24px;
+            &:nth-child(3n + 1) {
+                margin-left: 0;
+            }
+            &--empty {
+                .draws__buttons {
+                    bottom: -28px;
+                }
+            }
+        }
+
+        &__date {
+            font-size: 16px;
+            padding: 3px 0 0 5px;
+        }
+
+        &__main {
+            min-height: 330px;
+            padding: 58px 0 0 0;
+            clip-path: polygon(93px 0, 100% 0, 100% 100%, 0 100%, 0 31px, 72px 31px);
+        }
+
+        &__jackpot {
+            margin-bottom: 31px;
+        }
+        &__jackpot-frame {
+            width: 346px;
+            height: 102px;
+            background-position: -332px -2655px;
+            padding-top: 26px;
+        }
+        &__jackpot-title {
+            top: -13px;
+            font-size: 18px;
+        }
+
+        &__jackpot-select {
+            margin-right: 20px;
+        }
+        &__jackpot-number {
+            font-size: 30px;
+        }
+        &__buttons {
+            bottom: -19px;
+        }
+    }
+
+    .card-section {
+        margin-bottom: 24px;
+        &__out {
+            padding-bottom: 24px;
+        }
+        &__title {
+            font-size: 18px;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        &__item {
+            width: 45px;
+            height: 43px;
+            margin-top: 5px;
+            margin-left: 5px;
+            font-size: 24px;
+            line-height: 43px;
+        }
+    }
+
+    .prize {
+        min-height: 232px;
+        padding: 15px;
+        clip-path: polygon(0 7%, 30% 7%, 31% 0, 69% 0, 70% 7%, 100% 7%, 100% 100%, 0 100%);
+
+        &--empty {
+            padding: 80px 20px 0;
+            .prize__text {
+                font-size: 67px;
+            }
+        }
+
+        &__title {
+            font-size: 20px;
+            margin-bottom: 32px;
+        }
+        &__count {
+            margin-bottom: 12px;
+        }
+
+        &__line {
+            width: 28px;
+            height: 2px;
+            margin-top: -3px;
+        }
+
+        &__count-text {
+            font-size: 40px;
+            min-width: 310px;
+        }
+        &__transaction {
+            font-size: 20px;
+            margin-bottom: 9px;
+            padding: 0px 68px;
+        }
+        &__match {
+            font-size: 20px;
+        }
+    }
+}
+
+@include media-breakpoint-between(sm, lg) {
+    .draws {
+        margin-bottom: 200px;
+        &__item {
+            width: 424px;
+            padding: 8px;
+            background-color: #e5f6ff;
+            margin-left: 24px;
+            &:nth-child(3n + 1) {
+                margin-left: 0;
+            }
+            &--empty {
+                .draws__buttons {
+                    bottom: -28px;
+                }
+            }
+        }
+
+        &__date {
+            font-size: 16px;
+            padding: 3px 0 0 5px;
+        }
+
+        &__main {
+            min-height: 330px;
+            padding: 58px 0 0 0;
+            clip-path: polygon(93px 0, 100% 0, 100% 100%, 0 100%, 0 31px, 72px 31px);
+        }
+
+        &__jackpot {
+            margin-bottom: 31px;
+        }
+        &__jackpot-frame {
+            width: 346px;
+            height: 102px;
+            background-position: -332px -2655px;
+            padding-top: 26px;
+        }
+        &__jackpot-title {
+            top: -13px;
+            font-size: 18px;
+        }
+
+        &__jackpot-select {
+            margin-right: 20px;
+        }
+        &__jackpot-number {
+            font-size: 30px;
+        }
+        &__buttons {
+            bottom: -19px;
+        }
+    }
+
+    .card-section {
+        margin-bottom: 24px;
+        &__out {
+            padding-bottom: 24px;
+        }
+        &__title {
+            font-size: 18px;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        &__item {
+            width: 45px;
+            height: 43px;
+            margin-top: 5px;
+            margin-left: 5px;
+            font-size: 24px;
+            line-height: 43px;
+        }
+    }
+
+    .prize {
+        min-height: 232px;
+        padding: 15px;
+        clip-path: polygon(0 7%, 30% 7%, 31% 0, 69% 0, 70% 7%, 100% 7%, 100% 100%, 0 100%);
+
+        &--empty {
+            padding: 80px 20px 0;
+            .prize__text {
+                font-size: 67px;
+            }
+        }
+
+        &__title {
+            font-size: 20px;
+            margin-bottom: 32px;
+        }
+        &__count {
+            margin-bottom: 12px;
+        }
+
+        &__line {
+            width: 28px;
+            height: 2px;
+            margin-top: -3px;
+        }
+
+        &__count-text {
+            font-size: 40px;
+            min-width: 310px;
+        }
+        &__transaction {
+            font-size: 20px;
+            margin-bottom: 9px;
+            padding: 0px 68px;
+        }
+        &__match {
+            font-size: 20px;
+        }
+    }
+}

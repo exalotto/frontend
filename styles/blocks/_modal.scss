@@ -1,0 +1,460 @@
+.btn-close-custom {
+    position: absolute;
+    top: -22px;
+    right: 10px;
+    &::before {
+        content: "+";
+        position: absolute;
+        color: #fff;
+        transform: rotate(45deg);
+        font-size: 44px;
+        font-weight: 700;
+        line-height: 1;
+    }
+}
+
+.modal-dialog-lg,
+.modal-dialog-sm {
+    .modal-content {
+        background-color: transparent;
+        border: 0;
+        border-radius: 0;
+    }
+}
+
+.modal-shadow {
+    width: 100%;
+    position: relative;
+    &__title {
+        height: 0;
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        .one-row-title {
+            &__top-frame-clip {
+                opacity: 0.6;
+                clip-path: polygon(0 56%, 9% 0, 100% 0, 100% 100%, 0 100%);
+                width: 100%;
+            }
+            &__frame-in {
+                width: auto;
+                padding: 13px 45px 0;
+                background-color: #fff;
+            }
+            &__main-text {
+                line-height: 1;
+                font-weight: 700;
+                letter-spacing: -0.01em;
+                color: #666;
+                font-size: 24px;
+            }
+        }
+    }
+}
+
+.modal-behind {
+    position: absolute;
+    bottom: -10px;
+    left: 10px;
+    z-index: -1;
+    height: 90%;
+    background-color: #b8d2e6;
+    box-shadow: 0px 30px 60px 0px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content-wrapper {
+    padding: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-clip {
+    background-color: #fff;
+    width: 100%;
+    padding: 9px;
+    &__frame-button {
+        padding-top: 22px;
+    }
+    &__line1 {
+        position: absolute;
+        width: 1200px;
+        height: 2px;
+        top: 1px;
+        left: 5px;
+        background-color: #c3e5ff;
+        &::before {
+            content: "";
+            position: absolute;
+            top: -1px;
+            left: 0;
+            width: 4px;
+            height: 4px;
+            background-color: #c3e5ff;
+        }
+        &::after {
+            content: "";
+            position: absolute;
+            height: 2px;
+            width: 25px;
+            top: 8px;
+            right: -19px;
+            background-color: #c3e5ff;
+            transform: rotate(45deg);
+        }
+    }
+    &__line2 {
+        position: absolute;
+        width: 2px;
+        height: 120px;
+        top: 18px;
+        right: 1px;
+        background-color: #c3e5ff;
+        &::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: -1px;
+            width: 4px;
+            height: 4px;
+            background-color: #c3e5ff;
+        }
+    }
+    &__line3 {
+        position: absolute;
+        left: 2px;
+        width: 2px;
+        background-color: #c3e5ff;
+        height: 100%;
+        top: 245px;
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -1px;
+            width: 4px;
+            height: 4px;
+            background-color: #c3e5ff;
+        }
+    }
+    &__line4 {
+        position: absolute;
+        width: 411px;
+        height: 2px;
+        bottom: 0px;
+        left: 2px;
+        background-color: #c3e5ff;
+        &::before {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            right: 0;
+            width: 4px;
+            height: 4px;
+            background-color: #c3e5ff;
+        }
+    }
+    &__line5 {
+        position: absolute;
+        right: 2px;
+        width: 2px;
+        background-color: #c3e5ff;
+        height: 100%;
+        top: 362px;
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -1px;
+            width: 4px;
+            height: 4px;
+            background-color: #c3e5ff;
+        }
+    }
+    &__line6 {
+        position: absolute;
+        width: 430px;
+        height: 2px;
+        bottom: 0px;
+        right: 2px;
+        background-color: #c3e5ff;
+        &::before {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 4px;
+            height: 4px;
+            background-color: #c3e5ff;
+        }
+    }
+}
+.modal-inside {
+    padding: 30px;
+}
+
+.modal-dialog-lg {
+    max-width: 1241px;
+    .modal-behind {
+        width: 1220px;
+    }
+    .modal-clip {
+        clip-path: polygon(0 0, 1219px 0, 100% 23px, 100% 100%, 0 100%);
+        &__line1 {
+            width: 1200px;
+        }
+        &__line2 {
+            height: 120px;
+        }
+        &__line3 {
+            top: 245px;
+        }
+        &__line4 {
+            width: 411px;
+        }
+        &__line5 {
+            top: 362px;
+        }
+        &__line6 {
+            width: 430px;
+        }
+    }
+}
+.modal-dialog-sm {
+    max-width: 470px;
+    .one-row-title {
+        top: -37px;
+
+        &__top-frame-clip {
+            opacity: 0.6;
+            clip-path: polygon(0 56%, 9% 0, 100% 0, 100% 100%, 0 100%) !important;
+            width: 100%;
+            height: 37px;
+        }
+        &__frame-in {
+            width: 285px;
+            height: 69px;
+            padding: 21px 5px 0;
+            clip-path: polygon(9% 0, 100% 0, 100% 68%, 93% 100%, 0 100%, 0 27%) !important;
+        }
+        &__main-text {
+            font-size: 24px;
+        }
+    }
+
+    .modal-behind {
+        width: 450px;
+    }
+    .modal-clip {
+        clip-path: polygon(0 0, 448px 0, 100% 22px, 100% 100%, 0 100%);
+        &__line1 {
+            width: 430px;
+        }
+        &__line2 {
+            height: 86px;
+        }
+        &__line3 {
+            top: 134px;
+        }
+        &__line4 {
+            width: 162px;
+        }
+        &__line5 {
+            top: 240px;
+        }
+        &__line6 {
+            width: 160px;
+        }
+    }
+}
+
+.modal-wallet {
+    .modal-content-wrapper {
+        padding: 13px;
+    }
+    .modal-inside {
+        padding-top: 46px;
+        background-color: #f5fcff;
+        clip-path: polygon(0 0, 97% 0, 100% 4%, 100% 100%, 0 100%, 0 100%);
+    }
+
+    .btn-with-icon {
+        margin-bottom: 20px;
+    }
+    &__help {
+        text-align: center;
+        padding-top: 5px;
+        a {
+            font-size: 16px;
+            color: #12b542;
+            letter-spacing: -0.01em;
+            text-decoration: none;
+        }
+    }
+}
+
+.modal-ticket-submitted {
+    .modal-inside {
+        padding: 72px 40px 40px;
+        height: 460px;
+        .my-numbers {
+            margin-bottom: 40px;
+        }
+        .my-numbers__title {
+            margin-bottom: 16px;
+            font-size: 20px;
+            color: #97bcd9;
+        }
+    }
+}
+
+.transactions-final {
+    font-size: 16px;
+    color: #999;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    text-align: center;
+    background-color: #c3e5ff;
+    padding: 2px;
+    clip-path: polygon(8% 0, 100% 0, 100% 88%, 93% 100%, 0 100%, 0 13%);
+    &__in {
+        background-color: #f5fcff;
+        clip-path: polygon(8% 0, 100% 0, 100% 88%, 93% 100%, 0 100%, 0 13%);
+        padding: 12px;
+    }
+
+    &__item {
+        position: relative;
+        padding: 23px 0 31px;
+    }
+
+    &__comfirmations {
+        font-size: 13px;
+        padding-top: 11px;
+    }
+
+    &__address {
+        padding: 37px 0 22px;
+    }
+
+    &__address-title {
+        margin-bottom: 14px;
+    }
+
+    &__line {
+        position: relative;
+        bottom: 0;
+        width: 290px;
+        height: 2px;
+        margin-left: 26px;
+        background-color: #c3e5ff;
+        &::before,
+        &::after {
+            content: "";
+            position: absolute;
+            background-color: #c3e5ff;
+            width: 4px;
+            height: 4px;
+            top: -1px;
+        }
+        &::before {
+            left: 0;
+        }
+        &::after {
+            right: 0;
+        }
+    }
+
+    &__trans-id {
+        text-decoration: none;
+        color: #229dfd;
+    }
+}
+
+@include media-breakpoint-only(xs) {
+    .modal-dialog-lg,
+    .modal-dialog-sm {
+        .modal-behind {
+            width: 94%;
+        }
+    }
+    .btn-close-custom {
+        top: -41px;
+        right: 28px;
+    }
+    .btn-with-icon {
+        width: 100%;
+        &__frame-in {
+            width: 100%;
+            padding-left: 20px;
+        }
+    }
+    .modal-inside {
+        padding: 9px;
+    }
+    .transactions-final {
+        &__item,
+        &__address {
+            padding: 15px 0;
+        }
+    }
+}
+
+@include media-breakpoint-up(xs) {
+    .modal-dialog-lg {
+        .modal-shadow {
+            &__title {
+                .one-row-title {
+                    &__top-frame-clip {
+                        clip-path: polygon(0 56%, 6% 0, 100% 0, 100% 100%, 0 100%);
+                    }
+
+                    &__frame-in {
+                        width: auto;
+                        padding: 8px 30px 0;
+                        background-color: #fff;
+                        height: 35px;
+                        clip-path: polygon(5% 0, 100% 0, 100% 69%, 93% 100%, 0 100%, 0 28%);
+                    }
+                    &__main-text {
+                        font-size: 20px;
+                    }
+                }
+            }
+        }
+        .main-table__head .main-table__column .main-table__text {
+            font-size: 15px !important;
+        }
+    }
+}
+@include media-breakpoint-up(xl) {
+    .modal-dialog-lg {
+        .modal-shadow {
+            &__title {
+                .one-row-title {
+                    &__top-frame-clip {
+                        clip-path: polygon(0 56%, 6% 0, 100% 0, 100% 100%, 0 100%) !important;
+                    }
+
+                    &__frame-in {
+                        clip-path: polygon(5% 0, 100% 0, 100% 69%, 93% 100%, 0 100%, 0 28%) !important;
+                    }
+                }
+            }
+        }
+    }
+}
+@include media-breakpoint-up(xxl) {
+    .modal-dialog-lg {
+        .modal-shadow {
+            &__title {
+                .one-row-title {
+                    &__frame-in {
+                        height: 49px;
+                        padding: 15px 30px 0;
+                    }
+                }
+            }
+        }
+    }
+}

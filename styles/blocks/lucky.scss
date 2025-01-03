@@ -1,0 +1,730 @@
+.lucky-frame {
+    padding: 0 15px;
+    background: #fff;
+    width: 100%;
+    position: relative;
+    clip-path: polygon(0 0, 100% 0, 100% 94%, 93% 100%, 0 100%);
+    &__wrap {
+        position: relative;
+        z-index: 1;
+    }
+
+    &__titles {
+        top: -50px;
+        position: relative;
+    }
+
+    &__shadow {
+        filter: drop-shadow(0px 5px 24px rgba(126, 199, 255, 0.26));
+    }
+    &__shadow-double {
+        position: absolute;
+        content: "";
+        z-index: -1;
+        bottom: -8px;
+        left: 10px;
+        width: 86%;
+        height: 100px;
+        background-color: #f5fcff;
+        box-shadow: 0px 20px 57px 0px rgba(126, 199, 255, 0.39);
+
+        &::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            z-index: 2;
+            right: -7px;
+            width: 8px;
+            height: 9px;
+            background-color: #f5fcff;
+            clip-path: polygon(0 0, 100% 0, 0 100%);
+        }
+    }
+}
+
+.lucky-titles {
+    height: 0;
+    &__left,
+    &__right {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        text-align: center;
+    }
+    &__left {
+        .one-row-title {
+            &__frame-in {
+                width: 230px;
+                clip-path: polygon(4% 0, 100% 0, 100% 69%, 93% 100%, 0 100%, 0 28%);
+            }
+        }
+    }
+}
+
+.lucky-picker {
+    width: 400px;
+    padding: 56px 0 0 0;
+}
+
+.lucky-list {
+    padding: 38px 0 0 0;
+    &__buttons {
+        position: relative;
+        padding-left: 8px;
+        height: 108px;
+    }
+}
+
+.list-activated {
+    margin-bottom: 21px;
+    &__item {
+        margin: 0 0 2px 2px;
+        &:nth-child(7n + 1) {
+            margin-left: 0;
+        }
+        &:first-child {
+            .list-activated__item-in, .list-activated__item-editor {
+                clip-path: polygon(9px 0, 100% 0, 100% 100%, 0 100%, 0 9px);
+            }
+        }
+    }
+    &__item-in {
+        width: 39px;
+        height: 37px;
+        background-color: #837aff;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        padding-top: 2px;
+    }
+    &__text {
+        font-weight: bold;
+        font-size: 22px;
+        color: #fff;
+        line-height: 1;
+    }
+    &__item-editor {
+        margin: 0;
+        border: none;
+        padding: 0;
+        padding-top: 2px;
+        width: 39px;
+        height: 37px;
+        background-color: #837aff;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: default;
+        font-weight: bold;
+        font-size: 22px;
+        color: #fff;
+        line-height: 1;
+    }
+}
+
+.lucky-statistic {
+    margin-bottom: 26px;
+    > div {
+        text-align: center;
+        position: relative;
+        &::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            margin-top: -33px;
+            left: 0;
+            width: 1px;
+            height: 64px;
+            background-color: #a6dbff;
+            opacity: 0.5;
+            transform: rotate(18deg);
+        }
+        &:first-child::before {
+            display: none;
+        }
+    }
+    &__title {
+        font-size: 14px;
+        color: #97bcd9;
+        font-weight: bold;
+        line-height: 1;
+        margin-bottom: 7px;
+    }
+    &__subtitle {
+        font-size: 22px;
+        color: #458abe;
+        font-weight: 600;
+        line-height: 1;
+    }
+    &__total {
+        width: 70px;
+    }
+    &__played {
+        width: 120px;
+    }
+    &__cost {
+        width: 80px;
+    }
+}
+
+@include media-breakpoint-up(sm) {
+    .lucky-frame {
+        padding: 0 15px;
+        background: #fff;
+        clip-path: polygon(0 0, 100% 0, 100% 90%, 94% 100%, 0 100%);
+
+        &__shadow-double {
+            bottom: -7px;
+            left: 4px;
+            width: 92%;
+        }
+    }
+    .lucky-titles {
+        &__left {
+            .one-row-title {
+                &__frame-in {
+                    width: 215px;
+                }
+            }
+        }
+    }
+
+    .lucky-picker {
+        padding: 56px 0 0 0;
+    }
+
+    .lucky-list {
+        padding: 35px 0 0 0;
+        &__buttons {
+            padding-left: 0;
+            height: 90px;
+            .btn-play {
+                position: absolute;
+                > .btn-s__frame {
+                    width: 520px;
+                }
+            }
+        }
+    }
+
+    .list-activated {
+        margin-bottom: 15px;
+        &__item {
+            margin: 0 0 6px 6px;
+            &:nth-child(7n + 1) {
+                margin-left: 6px;
+            }
+            &:first-child {
+                .list-activated__item-in {
+                    clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
+                }
+            }
+        }
+        &__item-in {
+            width: 44px;
+            height: 41px;
+            padding-top: 2px;
+        }
+        &__text {
+            font-size: 24px;
+        }
+        &__item-editor {
+            width: 44px;
+            height: 41px;
+            padding-top: 2px;
+            font-size: 24px;
+        }
+    }
+
+    .lucky-statistic {
+        margin-bottom: 13px;
+        > div {
+            &::before {
+                margin-top: -24px;
+                left: -15px;
+                height: 41px;
+                transform: rotate(22deg);
+            }
+        }
+        &__title {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        &__subtitle {
+            font-size: 24px;
+        }
+        &__total {
+            width: 27%;
+        }
+        &__played {
+            width: 33%;
+        }
+        &__cost {
+            width: 27%;
+        }
+    }
+}
+@include media-breakpoint-up(md) {
+    .lucky-frame {
+        padding: 0 27px;
+        background: #fff;
+        clip-path: polygon(0 0, 100% 0, 100% 90%, 94% 100%, 0 100%);
+
+        &__shadow-double {
+            bottom: -7px;
+            left: 4px;
+            width: 92%;
+        }
+        &__wrap {
+            width: 415px;
+        }
+    }
+    .lucky-titles {
+        &__left {
+            .one-row-title {
+                &__frame-in {
+                    width: 215px;
+                }
+            }
+        }
+    }
+
+    .lucky-picker {
+        padding: 56px 0 0 0;
+    }
+
+    .lucky-list {
+        padding: 32px 0 0 0;
+        &__buttons {
+            height: 93px;
+            left: -13px;
+            .btn-play {
+                position: absolute;
+                > .btn-s__frame {
+                    width: 399px;
+                    min-width: 0;
+                    .btn-s__frame {
+                        width: 238px;
+                        min-width: 0;
+                        padding: 22px 21px 0 33px;
+                    }
+                    .btn-s__text {
+                        padding: 13px 0 0 43px;
+                    }
+                }
+            }
+        }
+    }
+
+    .list-activated {
+        margin-bottom: 14px;
+        &__item {
+            margin: 0 0 7px 7px;
+            &:nth-child(7n + 1) {
+                margin-left: 7px;
+            }
+        }
+        &__item-in {
+            width: 44px;
+            height: 41px;
+            padding-top: 2px;
+        }
+        &__text {
+            font-size: 24px;
+        }
+        &__item-editor {
+            width: 44px;
+            height: 41px;
+            padding-top: 2px;
+            font-size: 24px;
+        }
+    }
+    .lucky-statistic {
+        margin-bottom: 13px;
+        > div {
+            &::before {
+                margin-top: -24px;
+                left: -15px;
+                height: 41px;
+                transform: rotate(22deg);
+            }
+        }
+        &__title {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        &__subtitle {
+            font-size: 24px;
+        }
+        &__total {
+            width: 25%;
+        }
+        &__played {
+            width: 44%;
+            &::before {
+                left: 0 !important;
+            }
+        }
+        &__cost {
+            width: 21%;
+            &::before {
+                left: -11px !important;
+            }
+        }
+    }
+}
+@include media-breakpoint-up(lg) {
+    .lucky-frame {
+        padding: 0 17px;
+        background: #fff;
+        clip-path: polygon(0 0, 100% 0, 100% 90%, 95% 100%, 0 100%);
+
+        &__shadow-double {
+            bottom: -7px;
+            left: 4px;
+            width: 93%;
+        }
+        &__wrap {
+            width: 680px;
+        }
+    }
+    .lucky-titles {
+        &__left {
+            .one-row-title {
+                &__frame-in {
+                    width: 215px;
+                }
+            }
+        }
+    }
+
+    .lucky-picker {
+        padding: 39px 0 0 0;
+        width: 310px;
+    }
+
+    .lucky-list {
+        width: 322px;
+        padding: 40px 0 0 0;
+        &__buttons {
+            height: 84px;
+            left: -9px;
+            .btn-play {
+                position: absolute;
+                > .btn-s__frame {
+                    width: 351px;
+                    min-width: 0;
+                    .btn-s__frame {
+                        width: 220px;
+                        min-width: 0;
+                        padding: 22px 21px 0 33px;
+                    }
+                    .btn-s__text {
+                        padding: 13px 0 0 30px;
+                    }
+                }
+            }
+        }
+    }
+
+    .list-activated {
+        margin-bottom: 15px;
+        &__item {
+            margin: 0 0 2px 2px;
+            &:nth-child(7n + 1) {
+                margin-left: 2px;
+            }
+        }
+        &__item-in {
+            width: 44px;
+            height: 41px;
+            padding-top: 2px;
+        }
+        &__text {
+            font-size: 24px;
+        }
+        &__item-editor {
+            width: 44px;
+            height: 41px;
+            padding-top: 2px;
+            font-size: 24px;
+        }
+    }
+    .lucky-statistic {
+        margin-bottom: 13px;
+        > div {
+            &::before {
+                margin-top: -24px;
+                left: -15px;
+                height: 41px;
+                transform: rotate(22deg);
+            }
+        }
+        &__title {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        &__subtitle {
+            font-size: 24px;
+        }
+        &__total {
+            width: 27%;
+        }
+        &__played {
+            width: 46%;
+            &::before {
+                left: 0 !important;
+            }
+        }
+        &__cost {
+            width: 22%;
+            &::before {
+                left: -16px !important;
+            }
+        }
+    }
+}
+@include media-breakpoint-up(xl) {
+    .lucky-frame {
+        padding: 0 24px;
+        background: #fff;
+        clip-path: polygon(0 0, 100% 0, 100% 90%, 95% 100%, 0 100%);
+
+        &__shadow-double {
+            bottom: -7px;
+            left: 4px;
+            width: 93%;
+        }
+        &__wrap {
+            width: 788px;
+        }
+    }
+    .lucky-titles {
+        &__left {
+            .one-row-title {
+                &__frame-in {
+                    width: 215px;
+                }
+            }
+        }
+    }
+
+    .lucky-picker {
+        padding: 53px 0 0 0;
+        width: 350px;
+    }
+
+    .lucky-list {
+        width: 371px;
+        padding: 50px 0 0 0;
+        &__buttons {
+            height: 93px;
+            left: -4px;
+            .btn-play {
+                position: absolute;
+                > .btn-s__frame {
+                    width: 395px;
+                    min-width: 0;
+                    .btn-s__frame {
+                        width: 240px;
+                        min-width: 0;
+                        padding: 22px 21px 0 33px;
+                    }
+                    .btn-s__text {
+                        padding: 13px 0 0 30px;
+                    }
+                }
+            }
+        }
+    }
+
+    .list-activated {
+        margin-bottom: 21px;
+        &__item {
+            margin: 0 0 3px 3px;
+            &:nth-child(7n + 1) {
+                margin-left: 3px;
+            }
+        }
+        &__item-in {
+            width: 50px;
+            height: 47px;
+            padding-top: 2px;
+        }
+        &__text {
+            font-size: 28px;
+        }
+        &__item-editor {
+            width: 50px;
+            height: 47px;
+            padding-top: 2px;
+            font-size: 28px;
+        }
+    }
+    .lucky-statistic {
+        margin-bottom: 20px;
+        > div {
+            &::before {
+                margin-top: -24px;
+                left: -15px;
+                height: 41px;
+                transform: rotate(22deg);
+            }
+        }
+        &__title {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        &__subtitle {
+            font-size: 24px;
+        }
+        &__total {
+            width: 30%;
+        }
+        &__played {
+            width: 38%;
+            &::before {
+                left: -7px !important;
+            }
+        }
+        &__cost {
+            width: 24%;
+            &::before {
+                left: -3px !important;
+            }
+        }
+    }
+}
+@include media-breakpoint-up(xxl) {
+    .lucky-frame {
+        padding: 0 32px;
+        min-height: 430px;
+        width: 920px;
+        clip-path: polygon(0 0, 100% 0, 100% 92%, 96% 100%, 0 100%);
+
+        &__titles {
+            top: -50px;
+        }
+        &__wrap {
+            width: 920px;
+        }
+        &__shadow-double {
+            bottom: -8px;
+            left: 10px;
+            width: 94%;
+            height: 100px;
+
+            &::after {
+                bottom: 0;
+                right: -8px;
+                width: 1%;
+                height: 8px;
+                clip-path: polygon(0 0, 100% 0, 0 100%);
+            }
+        }
+    }
+    .lucky-titles {
+        &__left {
+            width: 400px;
+            padding-left: 75px;
+        }
+        &__right {
+            width: 424px;
+            padding-left: 71px;
+            text-align: left;
+            .one-row-title__frame-in {
+                width: 207px;
+            }
+        }
+    }
+    .lucky-picker {
+        width: 400px;
+        padding: 56px 0 0 0;
+    }
+    .lucky-list {
+        width: 426px;
+        padding: 55px 0 0 0;
+        &__buttons {
+            left: -7px;
+            .btn-play {
+                > .btn-s__frame {
+                    width: 442px;
+                    .btn-s__frame {
+                        width: 274px;
+                        // min-width: 0;
+                        padding: 25px 21px 0 47px;
+                    }
+                    .btn-s__text {
+                        padding: 13px 21px 0 51px;
+                    }
+                }
+            }
+        }
+    }
+
+    .list-activated {
+        margin-bottom: 21px;
+        &__item {
+            margin: 0 0 3px 3px;
+            &:nth-child(7n + 1) {
+                margin-left: 0;
+            }
+            &:first-child {
+                .list-activated__item-in {
+                    clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%, 0 14px);
+                }
+            }
+        }
+        &__item-in {
+            width: 58px;
+            height: 55px;
+            padding-top: 4px;
+        }
+        &__text {
+            font-size: 32px;
+        }
+        &__item-editor {
+            width: 58px;
+            height: 55px;
+            padding-top: 4px;
+            font-size: 32px;
+        }
+    }
+
+    .lucky-statistic {
+        margin-bottom: 16px;
+        > div {
+            &::before {
+                margin-top: -30px;
+                left: -15px;
+                height: 54px;
+                transform: rotate(22deg);
+            }
+        }
+        &__title {
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+        &__subtitle {
+            font-size: 28px;
+        }
+        &__total {
+            width: 30%;
+        }
+        &__played {
+            width: 41%;
+            &::before {
+                left: -7px !important;
+            }
+        }
+        &__cost {
+            width: 24%;
+            &::before {
+                left: -8px !important;
+            }
+        }
+    }
+}

@@ -1,0 +1,36 @@
+import Image from 'next/image';
+import Link from 'next/link';
+
+import { Container } from 'react-bootstrap';
+
+import logoImage from '@/images/logo.png';
+import { DropdownNavigationMenu, NavigationMenu } from './Navigation';
+
+const Logo = () => (
+  <Link href="/" className="logo d-flex align-items-center">
+    <Image src={logoImage} className="logo__img" alt="" />
+    <span className="logo__text">
+      <span className="logo__text-colored">Exa</span>Lotto
+    </span>
+  </Link>
+);
+
+const MainSection = () => (
+  <div className="main-section d-flex justify-content-between flex-column flex-md-row">
+    {/* TODO */}
+  </div>
+);
+
+export const Header = () => (
+  <div className="header-out">
+    <Container>
+      <div className="header d-flex justify-content-between align-items-start">
+        <Logo />
+        <NavigationMenu />
+        <DropdownNavigationMenu />
+        {/* TODO: ConnectButton */}
+      </div>
+      <MainSection />
+    </Container>
+  </div>
+);
