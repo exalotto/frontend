@@ -6,6 +6,8 @@ import { Container } from 'react-bootstrap';
 import logoImage from '@/images/logo.png';
 
 import { ConnectButton } from './Connection';
+import { Jackpot } from './Jackpot';
+import { LuckyFrame } from './LuckyFrame';
 import { DropdownNavigationMenu, NavigationMenu } from './Navigation';
 
 const Logo = () => (
@@ -19,7 +21,8 @@ const Logo = () => (
 
 const MainSection = () => (
   <div className="main-section d-flex justify-content-between flex-column flex-md-row">
-    {/* TODO */}
+    <Jackpot />
+    <LuckyFrame />
   </div>
 );
 
