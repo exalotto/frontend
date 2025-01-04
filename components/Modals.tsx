@@ -132,7 +132,7 @@ export function Modal<Params extends unknown[]>({
                     ? null
                     : children({
                         name,
-                        params: (deferTitle ? params : params.concat(setTitle)) as Params,
+                        params: (deferTitle ? params.concat(setTitle) : params) as Params,
                         resolve,
                         reject,
                         visible,
@@ -162,7 +162,7 @@ export type MessageModalParams = [string, string];
 export type InternalMessageModalParams = [string, string, TitleMutator];
 
 export const MessageModal = () => (
-  <Modal name="message" className="modal-wallet" resolveOnHide deferTitle>
+  <Modal name="message" className="modal-dialog-sm modal-wallet" resolveOnHide deferTitle>
     {({ params: [title, message, setTitle] }: ModalStateInstance<InternalMessageModalParams>) => {
       setTitle(title);
       return <p>{message.toString()}</p>;
