@@ -1,8 +1,10 @@
 import Web3 from 'web3';
 import type { Contract, EventLog } from 'web3';
 
+import { abi as ControllerABI } from './Controller.json';
 import { abi as CurrencyTokenABI } from './IERC20.json';
 import { abi as LotteryABI } from './Lottery.json';
+import { abi as GovernanceTokenABI } from './Token.json';
 
 export interface Options {
   web3?: Web3;
@@ -101,9 +103,16 @@ export class Lottery {
   // The generic ERC-20 ABI, which we use for the currency token (e.g. Dai, not EXL).
   public static readonly ERC20_ABI = CurrencyTokenABI;
 
-  // The ABI of the lottery smartcontract, allowing the user to buy tickets, trigger draws, and
-  // withdraw prizes.
+  // The ABI of the lottery smartcontract, allowing the user to buy tickets, trigger drawings,
+  // withdraw prizes, etc.
   public static readonly ABI = LotteryABI;
+
+  // The ABI of the `TimelockController` used in the lottery governance. This is also the treasury
+  // where all revenue is stashed and made available to partners and referrers for withdrawal.
+  public static readonly CONTROLLER_ABI = ControllerABI;
+
+  // The ABI of the EXL token, which is a superset of ERC-20.
+  public static readonly GOVERNANCE_TOKEN_ABI = GovernanceTokenABI;
 
   public static readonly NULL_REFERRAL_CODE =
     '0x0000000000000000000000000000000000000000000000000000000000000000';
@@ -113,6 +122,8 @@ export class Lottery {
   private readonly _defaultSigner: string | null;
   private readonly _lotteryContract: Contract<typeof LotteryABI>;
   private readonly _currencyTokenContract: AsyncValue<Contract<typeof CurrencyTokenABI>>;
+  private readonly _controllerContract: AsyncValue<Contract<typeof ControllerABI>>;
+  private readonly _governanceTokenContract: AsyncValue<Contract<typeof GovernanceTokenABI>>;
 
   public constructor(options: Options) {
     if (!options.address) {
@@ -133,6 +144,17 @@ export class Lottery {
       const address: string = await this._lotteryContract.methods.currencyToken().call();
       return new this._web3.eth.Contract(CurrencyTokenABI, address);
     });
+    this._controllerContract = new AsyncValue<Contract<typeof ControllerABI>>(async () => {
+      const address: string = await this._lotteryContract.methods.owner().call();
+      return new this._web3.eth.Contract(ControllerABI, address);
+    });
+    this._governanceTokenContract = new AsyncValue<Contract<typeof GovernanceTokenABI>>(
+      async () => {
+        const controller = await this._controllerContract.get();
+        const address: string = await controller.methods.token().call();
+        return new this._web3.eth.Contract(GovernanceTokenABI, address);
+      },
+    );
   }
 
   public get lotteryAddress(): string {
@@ -156,8 +178,26 @@ export class Lottery {
   }
 
   public async getCurrencyTokenAddress(): Promise<string> {
-    const currencyToken = await this.getCurrencyToken();
-    return currencyToken.options.address!;
+    const contract = await this.getCurrencyToken();
+    return contract.options.address!;
+  }
+
+  public async getController(): Promise<Contract<typeof ControllerABI>> {
+    return await this._controllerContract.get();
+  }
+
+  public async getControllerAddress(): Promise<string> {
+    const contract = await this.getController();
+    return contract.options.address!;
+  }
+
+  public async getGovernanceToken(): Promise<Contract<typeof GovernanceTokenABI>> {
+    return await this._governanceTokenContract.get();
+  }
+
+  public async getGovernanceTokenAddress(): Promise<string> {
+    const contract = await this.getGovernanceToken();
+    return contract.options.address!;
   }
 
   public setProvider(p: string): void {
