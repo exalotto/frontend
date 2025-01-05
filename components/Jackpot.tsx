@@ -8,16 +8,22 @@ import { useAsyncEffect } from './Utilities';
 export const Jackpot = () => {
   const { lottery } = useLottery();
   const [jackpot, setJackpot] = useState<number | null>(null);
+  const setJackpotFromString = (jackpot: string) => {
+    setJackpot(parseFloat(Web3.utils.fromWei(jackpot, 'ether')));
+  };
   useAsyncEffect(async () => {
     if (!lottery) {
       return () => {};
     }
-    const subscription = await lottery.subscribeToJackpot((jackpot: string) => {
-      setJackpot(parseFloat(Web3.utils.fromWei(jackpot, 'ether')));
-    });
-    return () => {
-      subscription.cancel();
-    };
+    setJackpotFromString(await lottery.getJackpot());
+    try {
+      const subscription = await lottery.subscribeToJackpot(setJackpotFromString);
+      return () => {
+        subscription.cancel();
+      };
+    } catch {
+      return () => {};
+    }
   }, [lottery]);
   return (
     <div className="jackpot">

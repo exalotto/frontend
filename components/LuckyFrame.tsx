@@ -170,7 +170,11 @@ const PlayButton = ({ numbers, onPlayed }: { numbers: number[]; onPlayed: () => 
   const buyTicket = async (numbers: number[]) => {
     let receipt;
     try {
-      receipt = await lottery!.createTicket(numbers, context!.account);
+      if (context!.account) {
+        receipt = await lottery!.createTicket(numbers, context!.account);
+      } else {
+        receipt = await lottery!.createTicket(numbers);
+      }
     } catch (error) {
       console.error(error);
       showModal('message', 'Error', '' + error);

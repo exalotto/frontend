@@ -175,6 +175,9 @@ export class Lottery {
   public async subscribeToJackpot(callback: (jackpot: string) => unknown) {
     const fetch = async () => callback(await this.getJackpot());
     const subscription = await this._web3.eth.subscribe('newBlockHeaders');
+    subscription.on('data', () => {
+      fetch();
+    });
     fetch();
     return new LotterySubscription(subscription);
   }

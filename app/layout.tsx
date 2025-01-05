@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { ConnectionProvider } from '@/components/Connection';
+import { LotteryContextProvider } from '@/components/LotteryContext';
 
 import '@/styles/prism.css';
 import '@/styles/main.scss';
@@ -18,7 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ConnectionProvider>{children}</ConnectionProvider>
+        <ConnectionProvider>
+          <LotteryContextProvider>{children}</LotteryContextProvider>
+        </ConnectionProvider>
       </body>
     </html>
   );

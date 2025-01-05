@@ -1,3 +1,5 @@
+'use client';
+
 import React, { PropsWithChildren, useContext, useEffect, useState } from 'react';
 
 import type Web3 from 'web3';
