@@ -1,3 +1,4 @@
 [submodule "lottery"]
 	path = lottery
 	url = https://github.com/exalotto/lottery.git
+	branch = main

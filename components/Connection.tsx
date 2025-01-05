@@ -1,7 +1,6 @@
 'use client';
 
 import type { PropsWithChildren } from 'react';
-import { useEffect } from 'react';
 
 import type { StaticImageData } from 'next/image';
 import Image from 'next/image';
@@ -19,6 +18,7 @@ import { MessageModalParams, Modal, ModalStateInstance, useModals } from './Moda
 
 import metaMaskLogo from '@/images/metamask.png';
 import walletConnectLogo from '@/images/walletconnect.png';
+import { useAsyncEffect } from './Utilities';
 
 class Web3Error extends Error {
   public constructor(public readonly inner: Error) {
@@ -29,19 +29,17 @@ class Web3Error extends Error {
 const ConnectWeb3 = ({ children }: PropsWithChildren) => {
   const context = useWeb3React();
   const chainId = parseInt(process.env.NEXT_PUBLIC_NETWORK_ID!, 10);
-  useEffect(() => {
-    (async () => {
-      if (!context.connector) {
-        await context.activate(
-          new NetworkConnector({
-            urls: {
-              [chainId]: process.env.NEXT_PUBLIC_RPC_URL!,
-            },
-            defaultChainId: chainId,
-          }),
-        );
-      }
-    })();
+  useAsyncEffect(async () => {
+    if (!context.connector) {
+      await context.activate(
+        new NetworkConnector({
+          urls: {
+            [chainId]: process.env.NEXT_PUBLIC_RPC_URL!,
+          },
+          defaultChainId: chainId,
+        }),
+      );
+    }
   }, [context, chainId]);
   return children;
 };
@@ -154,7 +152,7 @@ export const WalletModal = () => {
   );
 };
 
-const web3ConnectionErrorMessage = `Connection with your wallet failed. Are you connected to Polygon PoS? (The chain ID must be 137.)`;
+const web3ConnectionErrorMessage = `Connection with your wallet failed. Are you connected to Polygon PoS? (The chain ID must be ${process.env.NEXT_PUBLIC_NETWORK_ID}.)`;
 
 export const ConnectButton = () => {
   const { account } = useWeb3React();

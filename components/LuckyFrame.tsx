@@ -4,7 +4,7 @@ import Web3 from 'web3';
 
 import { useLottery } from './LotteryContext';
 import { useModals } from './Modals';
-import { range, COMBINATIONS } from './Utilities';
+import { range, COMBINATIONS, useAsyncEffect } from './Utilities';
 
 const Picker = ({ numbers, onClick }: { numbers: number[]; onClick: (number: number) => void }) => (
   <div className="lucky-picker d-none d-lg-block">
@@ -127,16 +127,14 @@ const NumberList = ({
 const NumberStats = ({ numbers }: { numbers: number[] }) => {
   const { lottery } = useLottery();
   const [price, setPrice] = useState<number | null>(null);
-  useEffect(() => {
-    (async () => {
-      setPrice(null);
-      if (lottery && numbers.length >= 6) {
-        const priceValue = parseFloat(
-          Web3.utils.fromWei(await lottery.getTicketPrice(numbers), 'ether'),
-        );
-        setPrice(Math.round(priceValue * 100) / 100);
-      }
-    })();
+  useAsyncEffect(async () => {
+    setPrice(null);
+    if (lottery && numbers.length >= 6) {
+      const priceValue = parseFloat(
+        Web3.utils.fromWei(await lottery.getTicketPrice(numbers), 'ether'),
+      );
+      setPrice(Math.round(priceValue * 100) / 100);
+    }
   }, [lottery, numbers]);
   return (
     <div className="lucky-statistic d-flex justify-content-around align-items-center">
