@@ -15,7 +15,7 @@ export const Dropdown = ({
 }: PropsWithChildren & {
   variant: string;
   text: string;
-  onSelect: () => void;
+  onSelect: (key: string | null) => void;
 }) => (
   <div className={`main-dropdown ${variant && `main-dropdown--${variant}`}`}>
     <BSDropdown className="main-dropdown__wrap" onSelect={onSelect}>

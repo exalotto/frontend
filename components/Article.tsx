@@ -1,12 +1,16 @@
 import type { PropsWithChildren } from 'react';
-import type { Metadata } from 'next';
 
 import { Container } from 'react-bootstrap';
 
 import { MainBody } from './MainBody';
 import { ArticleHeader } from './Headers';
 
-export const Article = ({ meta: { date }, children }: PropsWithChildren & { meta: Metadata }) => (
+import '@/styles/prism.css';
+
+export const Article = ({
+  meta: { date },
+  children,
+}: PropsWithChildren & { meta: { date?: string } }) => (
   <MainBody>
     <ArticleHeader />
     <section className="article">

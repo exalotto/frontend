@@ -128,14 +128,14 @@ const NumberList = ({
 
 const NumberStats = ({ numbers }: { numbers: number[] }) => {
   const { lottery } = useLottery();
-  const [price, setPrice] = useState<number | null>(null);
+  const [price, setPrice] = useState<string | null>(null);
   useAsyncEffect(async () => {
     setPrice(null);
     if (lottery && numbers.length >= 6) {
       const priceValue = parseFloat(
         Web3.utils.fromWei(await lottery.getTicketPrice(numbers), 'ether'),
       );
-      setPrice(Math.round(priceValue * 100) / 100);
+      setPrice((Math.round(priceValue * 100) / 100).toFixed(2));
     }
   }, [lottery, numbers]);
   return (
@@ -151,10 +151,12 @@ const NumberStats = ({ numbers }: { numbers: number[] }) => {
         </div>
       </div>
       <div className="lucky-statistic__cost">
-        <div className="lucky-statistic__title">
-          Price ({process.env.NEXT_PUBLIC_CURRENCY_NAME})
-        </div>
-        <div className="lucky-statistic__subtitle">{price}</div>
+        {price ? (
+          <>
+            <div className="lucky-statistic__title">Price</div>
+            <div className="lucky-statistic__subtitle">$&nbsp;{price}</div>
+          </>
+        ) : null}
       </div>
     </div>
   );
