@@ -1,0 +1,99 @@
+export const meta = {
+  title: 'How to Play',
+  description: 'A decentralized, permissionless, autonomous, and provably fair lottery game.',
+};
+
+# How to Play
+
+NOTE: in this article we provide specific instructions on how to play using
+[MetaMask](https://metamask.io/), but ExaLotto supports other popular connection methods via
+[WalletConnect](https://walletconnect.com/).
+
+## Introduction
+
+ExaLotto is a global, autonomous, decentralized, and most importantly **provably fair** lottery.
+
+It's mathematically impossible for anyone to steal the prize money or bias the numbers to favor
+specific players. Furthermore there is no central operating authority:
+[anyone can trigger ExaLotto's weekly draw](/draw)!
+
+This page shows how to play the fairest, safest lottery game in the world!
+
+## 1. Install and Connect MetaMask
+
+You can skip this step if you already have an Ethereum wallet.
+
+Head on to [metamask.io](https://metamask.io/) and download the extension for your browser.
+
+Once installed, MetaMask will guide you through the creation of a new wallet and provide an option
+to buy your first ethers.
+
+## 2. Connect MetaMask
+
+Now you can click the "Connect Wallet" button at the top-right corner of the website to connect
+MetaMask to ExaLotto:
+
+![Connect button](/images/connect.png)
+
+This will allow ExaLotto to buy your lottery tickets using MetaMask (confirmations will be asked
+first).
+
+## 3. Select Your Numbers
+
+You can select the numbers you want to play on most pages in this site:
+
+![Picker numbers](/images/picker_numbers.png)
+
+You need to select at least 6 numbers and at most 20. The price of your ticket will increase based
+on how many numbers you're playing. A ticket with 6 numbers has a base price of $1.50, and the price
+of other tickets is multiplied by every possible 6-number combination you're playing.
+
+After selecting your lucky numbers, hit the "Play" button!
+
+## 4. Confirm Transaction
+
+MetaMask will show a pop-up window containing various details about the transaction, including the
+price of your ticket as well as an estimate of the gas fee you'll pay.
+
+A ticket with 10 numbers (which is $315.00) may look like this:
+
+![MetaMask confirmation](/images/metamask_confirmation.png)
+
+After confirming the transaction in MetaMask a confirmation dialog containing the transaction ID
+will show up on the website:
+
+![Transaction confirmation](/images/transaction_confirmation.png)
+
+You can view your transaction in [Polygonscan](https://polygonscan.com/):
+
+![Etherscan](/images/etherscan.png)
+
+## 5. Wait for the Next Draw
+
+Head on to the ["Home"](/) page. The jackpot and the "draw" tiles at the bottom are updated in real
+time. We draw new numbers on Saturday evening every week, and if we haven't drawn yet
+[you might as well just do it yourself](/draw)! :)
+
+If luck is on your side and you matched at least 2 of the drawn numbers you'll see something like
+this:
+
+TODO: screenshot of a winning tile.
+
+If you know you have played a ticket that matches 2 or more numbers but your win is not showing up,
+please make sure the website is connected to your wallet (refresh the page and click the "Connect
+Wallet" button in the top-right corner) and that you are connected to the correct network,
+**Polygon PoS (chain ID 137)**.
+
+## 6. Cash Out!
+
+Have you won? That's great! Visit [exalotto.eth](https://exalotto.eth.limo/) at any time, connect
+your wallet, click the tile of your lucky draw, and withdraw your prize by clicking the "Withdraw"
+button!
+
+There is no deadline, the smartcontract will keep all your prizes indefinitely until you withdraw
+them.
+
+
+import {Article} from '@/components/Article'
+
+export default ({children}) => <Article meta={meta}>{children}</Article>

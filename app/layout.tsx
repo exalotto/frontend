@@ -8,7 +8,7 @@ import '@/styles/main.scss';
 
 export const metadata: Metadata = {
   title: 'ExaLotto',
-  description: 'A decentralized, permissionless, provably fair lottery game.',
+  description: 'A decentralized, permissionless, autonomous, and provably fair lottery game.',
 };
 
 export default function RootLayout({

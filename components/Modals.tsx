@@ -1,3 +1,5 @@
+'use client';
+
 import type { PropsWithChildren, ReactNode } from 'react';
 import React, { useContext, useEffect, useState } from 'react';
 

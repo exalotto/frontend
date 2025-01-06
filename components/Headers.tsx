@@ -39,3 +39,16 @@ export const Header = () => (
     </Container>
   </div>
 );
+
+export const ArticleHeader = () => (
+  <div className="header-out header-out--article">
+    <Container>
+      <div className="header d-flex justify-content-between align-items-start">
+        <Logo />
+        <NavigationMenu />
+        <DropdownNavigationMenu />
+        <ConnectButton />
+      </div>
+    </Container>
+  </div>
+);
