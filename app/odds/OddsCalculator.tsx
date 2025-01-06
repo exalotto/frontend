@@ -7,11 +7,11 @@ import { Container } from 'react-bootstrap';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 
-import { Dropdown } from './Dropdowns';
-import { SectionTitle } from './SectionTitle';
-import Table from './Tables';
+import { Dropdown } from '@/components/Dropdowns';
+import { SectionTitle } from '@/components/SectionTitle';
+import Table from '@/components/Tables';
 
-import { range, choose, divideBigInts } from './Utilities';
+import { range, choose, divideBigInts } from '@/components/Utilities';
 
 export const OddsCalculator = () => {
   const [playedNumbers, setPlayedNumbers] = useState<number>(6);

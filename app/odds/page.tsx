@@ -1,6 +1,6 @@
 import { Header } from '@/components/Headers';
 import { MainBody } from '@/components/MainBody';
-import { OddsCalculator } from '@/components/OddsCalculator';
+import { OddsCalculator } from './OddsCalculator';
 
 export default function Page() {
   return (
