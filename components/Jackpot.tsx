@@ -1,11 +1,91 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Web3 from 'web3';
 
+import { Lottery } from './Lottery';
 import { useLottery } from './LotteryContext';
 import { useAsyncEffect } from './Utilities';
+
+const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
+const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
+const ONE_HOUR_IN_MS = 60 * 60 * 1000;
+const ONE_MINUTE_IN_MS = 60 * 1000;
+
+const NextDraw = ({ lottery }: { lottery: Lottery | null }) => {
+  const [nextDrawTime, setNextDrawTime] = useState<number | null>(null);
+  const [timeToDraw, setTimeToDraw] = useState<number | null>(null);
+  useAsyncEffect(async () => {
+    if (lottery) {
+      const nextDrawTime = await lottery.getTimeOfNextDraw();
+      setNextDrawTime(nextDrawTime.getTime());
+    }
+  }, [lottery]);
+  useEffect(() => {
+    const updateTime = () => {
+      const now = Date.now();
+      if (!nextDrawTime || now > nextDrawTime) {
+        setTimeToDraw(null);
+      } else {
+        setTimeToDraw(nextDrawTime - now);
+      }
+    };
+    const interval = window.setInterval(updateTime, ONE_MINUTE_IN_MS);
+    updateTime();
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [nextDrawTime]);
+  const getDays = () => {
+    if (timeToDraw) {
+      return Math.floor((timeToDraw % ONE_WEEK_IN_MS) / ONE_DAY_IN_MS);
+    } else {
+      return '';
+    }
+  };
+  const getHours = () => {
+    if (timeToDraw) {
+      return Math.floor((timeToDraw % ONE_DAY_IN_MS) / ONE_HOUR_IN_MS);
+    } else {
+      return '';
+    }
+  };
+  const getMinutes = () => {
+    if (timeToDraw) {
+      return Math.floor((timeToDraw % ONE_HOUR_IN_MS) / ONE_MINUTE_IN_MS);
+    } else {
+      return '';
+    }
+  };
+  return (
+    <div className="next-draw">
+      <div className="next-draw__title">Next Draw</div>
+      <div className="next-draw__timeline">
+        <div className="row">
+          <div className="col-4 next-draw__item">
+            <div className="next-draw__item-in">
+              <div className="next-draw__item-title">{getDays()}</div>
+              <div className="next-draw__item-sub">Days</div>
+            </div>
+          </div>
+          <div className="col-4 next-draw__item">
+            <div className="next-draw__item-in">
+              <div className="next-draw__item-title">{getHours()}</div>
+              <div className="next-draw__item-sub">Hours</div>
+            </div>
+          </div>
+          <div className="col-4 next-draw__item">
+            <div className="next-draw__item-in">
+              <div className="next-draw__item-title">{getMinutes()}</div>
+              <div className="next-draw__item-sub">Minutes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const Jackpot = () => {
   const { lottery } = useLottery();
@@ -47,7 +127,7 @@ export const Jackpot = () => {
             $ {jackpot !== null && `${Math.floor(jackpot * 100) / 100}`}
           </div>
           {/* TODO: jackpot conversion */}
-          {/* TODO: <NextDraw lottery={lottery} /> */}
+          <NextDraw lottery={lottery} />
         </div>
       </div>
     </div>
