@@ -36,11 +36,6 @@ const navigationMenuItems = [
     visible: 'always',
   },
   {
-    caption: 'Draw',
-    target: '/draw',
-    visible: 'always',
-  },
-  {
     caption: 'ICO',
     target: '/ico',
     visible: 'never',
