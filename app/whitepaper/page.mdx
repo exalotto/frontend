@@ -1,0 +1,54 @@
+export const meta = {
+  title: 'ExaLotto Whitepaper',
+  description: 'A decentralized, permissionless, autonomous, and provably fair lottery game.',
+};
+
+# ExaLotto Whitepaper
+
+## Abstract
+
+We hereby provide the design specification of **ExaLotto**, a lottery game based on the Ethereum
+Virtual Machine (“EVM” in the following).
+
+The game will be managed as a Decentralized Autonomous Organization (“DAO” in the following).
+
+## Motivations
+
+Lottery games have ancient origins tracing back to the Chinese Han Dynasty, between years 205 and
+187 BC. The core idea of the game is that every player pays a small amount of money and a randomly
+chosen lucky winner gets the money from all contributions.
+
+Unfortunately, classic operation of such games requires a central running authority and subjects
+them to several issues:
+
+- **Censorship**: some countries make some or all lotteries illegal.
+- **Locality**: lotteries are usually State-managed and subject to local regulations, making them
+  impossible to extend across borders and turn global.
+- **Obscure or unfair prize allocation**: in a typical lottery game a share of the jackpot is
+  attributed to every winning category, but the way these shares are allocated is almost never
+  explained and is often unfair.
+- **Outright scams**: classic operation provides little to no guarantees about the fairness of the
+  drawing process, as well as the actual value of the ticket sales. The drawn numbers may be biased
+  to favor specific players, and / or the lottery operator may advertise a jackpot that is
+  significantly lower (but still attractive enough) than the ticket sales. It is certainly
+  suspicious that many lotteries constantly advertise perfectly round-numbered jackpots like $1M.
+
+Case in point, [Hot Lotto][hot-lotto] has suffered one of the most famous lottery fraud scandals
+(not necessarily the worst). Other known frauds include a [Serbian lottery announcing the numbers
+before they were drawn][serbian-lottery] and [Chinese lottery operators reportedly stealing jackpot
+money][chinese-lottery]. Other frauds that may have occurred might never be uncovered.
+
+We want to overcome all the above problems by implementing a new lottery game based on a
+decentralized, trustless, censorship-resistant, and cryptographically verified platform: the EVM.
+
+## Game Description
+
+TBD
+
+[chinese-lottery]: https://www.nikkei.com/article/DGKKASGM08H2T_Z20C15A7EAF000/
+[hot-lotto]: https://en.wikipedia.org/wiki/Hot_Lotto_fraud_scandal
+[serbian-lottery]: https://www.independent.co.uk/news/world/europe/serbian-lottery-probe-after-winning-number-called-before-its-drawn-10430922.html
+
+import { Article } from '@/components/Article';
+
+export default ({ children }) => <Article meta={meta}>{children}</Article>;

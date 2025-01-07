@@ -36,6 +36,11 @@ const navigationMenuItems = [
     visible: 'always',
   },
   {
+    caption: 'Draw',
+    target: '/draw',
+    visible: 'always',
+  },
+  {
     caption: 'ICO',
     target: '/ico',
     visible: 'never',
@@ -60,7 +65,7 @@ const NavigationMenuItem = ({
   target: string;
 }) => {
   const pathname = usePathname();
-  const active = pathname === target;
+  const active = pathname === target || pathname === target + '/';
   return (
     <li className={`top-menu__item ${active ? 'top-menu__item--active' : ''}`}>
       <Link href={target} className="top-menu__link">

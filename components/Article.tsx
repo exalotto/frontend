@@ -5,10 +5,11 @@ import { Container } from 'react-bootstrap';
 import { MainBody } from './MainBody';
 import { ArticleHeader } from './Headers';
 
+import 'katex/dist/katex.min.css';
 import '@/styles/prism.css';
 
 export const Article = ({
-  meta: { date },
+  meta: { date } = {},
   children,
 }: PropsWithChildren & { meta: { date?: string } }) => (
   <MainBody>

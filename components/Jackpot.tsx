@@ -2,11 +2,30 @@
 
 import { useEffect, useState } from 'react';
 
+import Link from 'next/link';
+
 import Web3 from 'web3';
 
 import { Lottery } from './Lottery';
 import { useLottery } from './LotteryContext';
 import { useAsyncEffect } from './Utilities';
+
+// This used to be a widget to perform an automatic conversion of the jackpot value to other
+// currencies, but now that we switched to Dai we don't use it any more.
+const JackpotConversion = () => (
+  <div className="jackpot__currency">
+    <div className="jackpot__currency-shadow">
+      <div className="jackpot__currency-shadow-clip"></div>
+    </div>
+    <div className="jackpot__currency-wrap">
+      <div className="jackpot__currency-select">&nbsp;</div>
+      <div className="jackpot__currency-selected">&nbsp;</div>
+    </div>
+    <div className="jackpot__currency-descr">
+      We use the Dai stablecoin. <Link href="/howtoplay">Learn more</Link>
+    </div>
+  </div>
+);
 
 const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
 const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -124,9 +143,9 @@ export const Jackpot = () => {
         </div>
         <div className="jackpot__main">
           <div className="jackpot__top-win">
-            $ {jackpot !== null && `${Math.floor(jackpot * 100) / 100}`}
+            {jackpot !== null ? <>$&nbsp;{Math.floor(jackpot * 100) / 100}</> : null}
           </div>
-          {/* TODO: jackpot conversion */}
+          <JackpotConversion />
           <NextDraw lottery={lottery} />
         </div>
       </div>

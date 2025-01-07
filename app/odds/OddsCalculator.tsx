@@ -107,8 +107,8 @@ export const OddsCalculator = () => {
             </Table>
           </div>
           <div className="probability__descr">
-            In general, calculating the probability of matching <em>i</em> of the 6 drawn numbers by
-            playing a <em>k</em>-number ticket is done using the following formula:
+            The probability of matching <em>i</em> of the 6 drawn numbers by playing a
+            <em>k</em>-number ticket is calculated with the following formula:
           </div>
           <div className="probability__expression">
             <BlockMath

@@ -46,11 +46,11 @@ export function divideBigInts(a: bigint, b: bigint): number {
 }
 
 export function formatBigNumber(web3: Web3, value: unknown): string {
-  const number = web3.utils.toBN(value);
-  const decimals = web3.utils.toBN('1000000000000000000');
-  const integer = number.div(decimals);
-  const fractional = number.mod(decimals);
-  return integer.toString(10) + '.' + fractional.toString(10, 18);
+  const number = web3.utils.toBigInt(value);
+  const decimals = BigInt('1000000000000000000');
+  const integer = number / decimals;
+  const fractional = number % decimals;
+  return integer.toString(10) + '.' + web3.utils.padLeft(fractional.toString(10), 18);
 }
 
 export type EffectDestructor = () => void;

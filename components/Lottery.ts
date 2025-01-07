@@ -6,6 +6,11 @@ import { abi as CurrencyTokenABI } from './IERC20.json';
 import { abi as LotteryABI } from './Lottery.json';
 import { abi as GovernanceTokenABI } from './Token.json';
 
+export type LotteryContract = Contract<typeof LotteryABI>;
+export type CurrencyTokenContract = Contract<typeof CurrencyTokenABI>;
+export type ControllerContract = Contract<typeof ControllerABI>;
+export type GovernanceTokenContract = Contract<typeof GovernanceTokenABI>;
+
 export interface Options {
   web3?: Web3;
   provider?: string;
@@ -120,10 +125,10 @@ export class Lottery {
   private readonly _lotteryAddress: string;
   private readonly _web3: Web3;
   private readonly _defaultSigner: string | null;
-  private readonly _lotteryContract: Contract<typeof LotteryABI>;
-  private readonly _currencyTokenContract: AsyncValue<Contract<typeof CurrencyTokenABI>>;
-  private readonly _controllerContract: AsyncValue<Contract<typeof ControllerABI>>;
-  private readonly _governanceTokenContract: AsyncValue<Contract<typeof GovernanceTokenABI>>;
+  private readonly _lotteryContract: LotteryContract;
+  private readonly _currencyTokenContract: AsyncValue<CurrencyTokenContract>;
+  private readonly _controllerContract: AsyncValue<ControllerContract>;
+  private readonly _governanceTokenContract: AsyncValue<GovernanceTokenContract>;
 
   public constructor(options: Options) {
     if (!options.address) {
@@ -140,21 +145,19 @@ export class Lottery {
     }
     this._defaultSigner = options.defaultSigner || null;
     this._lotteryContract = new this._web3.eth.Contract(LotteryABI, this._lotteryAddress);
-    this._currencyTokenContract = new AsyncValue<Contract<typeof CurrencyTokenABI>>(async () => {
+    this._currencyTokenContract = new AsyncValue<CurrencyTokenContract>(async () => {
       const address: string = await this._lotteryContract.methods.currencyToken().call();
       return new this._web3.eth.Contract(CurrencyTokenABI, address);
     });
-    this._controllerContract = new AsyncValue<Contract<typeof ControllerABI>>(async () => {
+    this._controllerContract = new AsyncValue<ControllerContract>(async () => {
       const address: string = await this._lotteryContract.methods.owner().call();
       return new this._web3.eth.Contract(ControllerABI, address);
     });
-    this._governanceTokenContract = new AsyncValue<Contract<typeof GovernanceTokenABI>>(
-      async () => {
-        const controller = await this._controllerContract.get();
-        const address: string = await controller.methods.token().call();
-        return new this._web3.eth.Contract(GovernanceTokenABI, address);
-      },
-    );
+    this._governanceTokenContract = new AsyncValue<GovernanceTokenContract>(async () => {
+      const controller = await this._controllerContract.get();
+      const address: string = await controller.methods.token().call();
+      return new this._web3.eth.Contract(GovernanceTokenABI, address);
+    });
   }
 
   public get lotteryAddress(): string {
@@ -169,11 +172,11 @@ export class Lottery {
     return this._defaultSigner;
   }
 
-  public get lottery(): Contract<typeof LotteryABI> {
+  public get lottery(): LotteryContract {
     return this._lotteryContract;
   }
 
-  public async getCurrencyToken(): Promise<Contract<typeof CurrencyTokenABI>> {
+  public async getCurrencyToken(): Promise<CurrencyTokenContract> {
     return await this._currencyTokenContract.get();
   }
 
@@ -182,7 +185,7 @@ export class Lottery {
     return contract.options.address!;
   }
 
-  public async getController(): Promise<Contract<typeof ControllerABI>> {
+  public async getController(): Promise<ControllerContract> {
     return await this._controllerContract.get();
   }
 
@@ -191,7 +194,7 @@ export class Lottery {
     return contract.options.address!;
   }
 
-  public async getGovernanceToken(): Promise<Contract<typeof GovernanceTokenABI>> {
+  public async getGovernanceToken(): Promise<GovernanceTokenContract> {
     return await this._governanceTokenContract.get();
   }
 

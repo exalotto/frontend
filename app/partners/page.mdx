@@ -1,0 +1,34 @@
+import { PartnerStatus } from './PartnerStatus';
+
+export const meta = {
+  title: 'ExaLotto Partnership Program',
+};
+
+# ExaLotto Partnership Program
+
+<PartnerStatus />
+
+## Overview
+
+Anyone can make money with ExaLotto, and not just by winning!
+
+ExaLotto is managed as a DAO (_"Decentralized Autonomous Organization"_) and anyone can join. Voting
+power is measured in `EXL`, an [ERC20][erc20] token that you can [trade on Uniswap][exl-uniswap].
+
+// TODO: link to Tally
+
+## Referral Program
+
+Want to make even _more_ money with ExaLotto? We run a referral program allowing anyone to sell
+ExaLotto tickets and take a **generous 10% cut** on their sales!
+
+Joining the program is as easy as 1-2-3.
+
+// TODO: referral wizard
+
+[erc20]: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/
+[exl-uniswap]: https://app.uniswap.org/#/tokens/polygon/0x3493976f8A80213c715729D13DF16CD8801C02Eb
+
+import { Article } from '@/components/Article';
+
+export default ({ children }) => <Article meta={meta}>{children}</Article>;
