@@ -301,15 +301,6 @@ export class Lottery {
       nonce: ((await permit.methods.nonces(signer).call()) as bigint).toString(),
       deadline,
     };
-    const types = {
-      Permit: [
-        { name: 'owner', type: 'address' },
-        { name: 'spender', type: 'address' },
-        { name: 'value', type: 'uint256' },
-        { name: 'nonce', type: 'uint256' },
-        { name: 'deadline', type: 'uint256' },
-      ],
-    };
     const typedData = {
       domain,
       message,
@@ -321,7 +312,13 @@ export class Lottery {
           { name: 'chainId', type: 'uint256' },
           { name: 'verifyingContract', type: 'address' },
         ],
-        Permit: types.Permit,
+        Permit: [
+          { name: 'owner', type: 'address' },
+          { name: 'spender', type: 'address' },
+          { name: 'value', type: 'uint256' },
+          { name: 'nonce', type: 'uint256' },
+          { name: 'deadline', type: 'uint256' },
+        ],
       },
     };
     const signature = (await this._web3.currentProvider!.request({
@@ -365,22 +362,13 @@ export class Lottery {
     };
     const nonce = (await permit.methods.getNonce(signer).call()) as bigint;
     const { timestamp } = await this._web3.eth.getBlock();
-    const deadline = timestamp + BigInt(3600);
+    const deadline = Number(timestamp) + 3600;
     const message = {
       holder: signer,
       spender: this._lotteryAddress,
-      nonce: nonce.toString(10),
-      expiry: deadline.toString(10),
+      nonce: nonce.toString(),
+      expiry: deadline,
       allowed: true,
-    };
-    const types = {
-      Permit: [
-        { name: 'holder', type: 'address' },
-        { name: 'spender', type: 'address' },
-        { name: 'nonce', type: 'uint256' },
-        { name: 'expiry', type: 'uint256' },
-        { name: 'allowed', type: 'bool' },
-      ],
     };
     const typedData = {
       domain,
@@ -393,7 +381,13 @@ export class Lottery {
           { name: 'chainId', type: 'uint256' },
           { name: 'verifyingContract', type: 'address' },
         ],
-        Permit: types.Permit,
+        Permit: [
+          { name: 'holder', type: 'address' },
+          { name: 'spender', type: 'address' },
+          { name: 'nonce', type: 'uint256' },
+          { name: 'expiry', type: 'uint256' },
+          { name: 'allowed', type: 'bool' },
+        ],
       },
     };
     const signature = (await this._web3.currentProvider!.request({
@@ -429,7 +423,7 @@ export class Lottery {
         .send({ from });
     } else {
       return await this._lotteryContract.methods
-        .createTicketWithDaiPermit(
+        .createTicket6WithDaiPermit(
           Lottery.NULL_REFERRAL_CODE,
           numbers,
           nonce,
