@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from 'react';
 
 import { WalletModal } from './Connection';
+import { PrivacyPolicyOverlay } from './PrivacyPolicyOverlay';
 import { MessageModal, ModalContainer } from './Modals';
 
 export const MainBody = ({ children }: PropsWithChildren) => (
@@ -9,6 +10,7 @@ export const MainBody = ({ children }: PropsWithChildren) => (
       {children}
       <WalletModal />
       <MessageModal />
+      <PrivacyPolicyOverlay />
     </ModalContainer>
   </div>
 );
