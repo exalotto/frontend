@@ -20,35 +20,58 @@ export interface Options {
   defaultSigner?: string;
 }
 
+// Fetches a value lazily and asynchronously. The actual fetching is performed by a user-provided
+// function (the `factory` argument in the constructor). Upon success the value is cached and reused
+// in all subsequent lookups, while if the user-provided function fails it's retried at every fetch.
+// As a result, the user-provided function must be repeatable because it may be called many times if
+// it keeps erroring out. Invocations will stop at the first success.
 class AsyncValue<Value> {
+  private readonly _factory: () => Promise<Value>;
+  private _running: boolean = false;
   private _value: Value | null = null;
-  private _error: Error | null = null;
   private _callbacks: [(value: Value) => void, (error: Error) => void][] = [];
 
   public constructor(factory: () => Promise<Value>) {
-    factory()
-      .then(value => {
-        this._value = value;
-        this._error = null;
-        this._callbacks.forEach(([resolve]) => resolve(value));
-        this._callbacks = [];
-      })
-      .catch(error => {
-        this._value = null;
-        this._error = error as Error;
-        this._callbacks.forEach(([, reject]) => reject(error as Error));
-        this._callbacks = [];
-      });
+    this._factory = factory;
   }
 
+  private async _runFactory(): Promise<void> {
+    if (this._running) {
+      return;
+    }
+    this._running = true;
+    let callbacks: (() => void)[];
+    try {
+      const value = await this._factory();
+      this._value = value;
+      callbacks = this._callbacks.map(
+        ([resolve]) =>
+          () =>
+            resolve(value),
+      );
+      this._callbacks = [];
+    } catch (error) {
+      this._value = null;
+      callbacks = this._callbacks.map(
+        ([, reject]) =>
+          () =>
+            reject(error as Error),
+      );
+      this._callbacks = [];
+    } finally {
+      this._running = false;
+    }
+    callbacks.forEach(callback => callback());
+  }
+
+  // Retrieves the value, calling the user-provided factory function if necessary.
   public get(): Promise<Value> {
     if (this._value !== null) {
       return Promise.resolve(this._value);
-    } else if (this._error !== null) {
-      return Promise.reject(this._error);
     } else {
       return new Promise<Value>((resolve, reject) => {
         this._callbacks.push([resolve, reject]);
+        this._runFactory();
       });
     }
   }
