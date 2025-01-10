@@ -2,7 +2,9 @@ import Web3 from 'web3';
 import type { Contract, EventLog } from 'web3';
 
 import { abi as ControllerABI } from './Controller.json';
-import { abi as CurrencyTokenABI } from './IERC20.json';
+import { abi as CurrencyTokenABI } from './ERC20.json';
+import { abi as DaiPermitABI } from './DaiPermit.json';
+import { abi as ERC20PermitABI } from './IERC20Permit.json';
 import { abi as LotteryABI } from './Lottery.json';
 import { abi as GovernanceTokenABI } from './Token.json';
 
@@ -66,9 +68,9 @@ export class LotterySubscription<SubscriptionType extends BaseSubscription> {
 
 export interface Receipt {
   transactionHash: string;
-  transactionIndex: number;
+  transactionIndex: bigint;
   blockHash: string;
-  blockNumber: number;
+  blockNumber: bigint;
 }
 
 export interface Draw {
@@ -107,6 +109,13 @@ export interface TicketExtended extends Ticket {
 export class Lottery {
   // The generic ERC-20 ABI, which we use for the currency token (e.g. Dai, not EXL).
   public static readonly ERC20_ABI = CurrencyTokenABI;
+
+  // The ERC-2612 extension ABI (for signed approvals of ERC-20 spending).
+  public static readonly ERC2612_ABI = ERC20PermitABI;
+
+  // The custom extension ABI used for approval signatures in Dai. It's similar to ERC-2612 but
+  // non-compliant, and needs ad-hoc handling.
+  public static readonly DAI_PERMIT_ABI = DaiPermitABI;
 
   // The ABI of the lottery smartcontract, allowing the user to buy tickets, trigger drawings,
   // withdraw prizes, etc.
@@ -247,6 +256,166 @@ export class Lottery {
     } else {
       return await this._lotteryContract.methods
         .createTicket6(Lottery.NULL_REFERRAL_CODE, numbers)
+        .send({ from });
+    }
+  }
+
+  private async _signPermit(signer: string, value: bigint) {
+    const currencyToken = await this.getCurrencyToken();
+    const permit = new this._web3.eth.Contract(ERC20PermitABI, currencyToken.options.address!);
+    const domain = {
+      name: await currencyToken.methods.name().call(),
+      version: '1',
+      chainId: parseInt(process.env.NEXT_PUBLIC_NETWORK_ID!, 10),
+      verifyingContract: currencyToken.options.address!,
+    };
+    const { timestamp } = await this._web3.eth.getBlock();
+    const deadline = Number(timestamp) + 3600;
+    const message = {
+      owner: signer,
+      spender: this._lotteryAddress,
+      value: value.toString(10),
+      nonce: ((await permit.methods.nonces(signer).call()) as bigint).toString(),
+      deadline,
+    };
+    const types = {
+      Permit: [
+        { name: 'owner', type: 'address' },
+        { name: 'spender', type: 'address' },
+        { name: 'value', type: 'uint256' },
+        { name: 'nonce', type: 'uint256' },
+        { name: 'deadline', type: 'uint256' },
+      ],
+    };
+    const typedData = {
+      domain,
+      message,
+      primaryType: 'Permit',
+      types: {
+        EIP712Domain: [
+          { name: 'name', type: 'string' },
+          { name: 'version', type: 'string' },
+          { name: 'chainId', type: 'uint256' },
+          { name: 'verifyingContract', type: 'address' },
+        ],
+        Permit: types.Permit,
+      },
+    };
+    const signature = (await this._web3.currentProvider!.request({
+      method: 'eth_signTypedData_v4',
+      params: [signer, JSON.stringify(typedData)],
+    })) as unknown as string;
+    const r = signature.slice(0, 66);
+    const s = '0x' + signature.slice(66, 130);
+    const v = parseInt(signature.slice(130, 132), 16);
+    return { deadline, r, s, v };
+  }
+
+  public async createTicketWithPermit(numbers: number[], account?: string): Promise<Receipt> {
+    const from = account || this._defaultSigner;
+    if (!from) {
+      throw Error(
+        'A signer is required to sign the permit; you must specify one either in the `account` argument or in the `defaultSigner` option at construction.',
+      );
+    }
+    const price = (await this._lotteryContract.methods.getTicketPrice(numbers).call()) as bigint;
+    const { deadline, r, s, v } = await this._signPermit(from, price);
+    if (numbers.length > 6) {
+      return await this._lotteryContract.methods
+        .createTicketWithPermit(Lottery.NULL_REFERRAL_CODE, numbers, price, deadline, v, r, s)
+        .send({ from });
+    } else {
+      return await this._lotteryContract.methods
+        .createTicket6WithPermit(Lottery.NULL_REFERRAL_CODE, numbers, price, deadline, v, r, s)
+        .send({ from });
+    }
+  }
+
+  private async _signDaiPermit(signer: string) {
+    const currencyToken = await this.getCurrencyToken();
+    const permit = new this._web3.eth.Contract(DaiPermitABI, currencyToken.options.address!);
+    const domain = {
+      name: await currencyToken.methods.name().call(),
+      version: '1',
+      chainId: parseInt(process.env.NEXT_PUBLIC_NETWORK_ID!, 10),
+      verifyingContract: currencyToken.options.address!,
+    };
+    const nonce = (await permit.methods.getNonce(signer).call()) as bigint;
+    const { timestamp } = await this._web3.eth.getBlock();
+    const deadline = timestamp + BigInt(3600);
+    const message = {
+      holder: signer,
+      spender: this._lotteryAddress,
+      nonce: nonce.toString(10),
+      expiry: deadline.toString(10),
+      allowed: true,
+    };
+    const types = {
+      Permit: [
+        { name: 'holder', type: 'address' },
+        { name: 'spender', type: 'address' },
+        { name: 'nonce', type: 'uint256' },
+        { name: 'expiry', type: 'uint256' },
+        { name: 'allowed', type: 'bool' },
+      ],
+    };
+    const typedData = {
+      domain,
+      message,
+      primaryType: 'Permit',
+      types: {
+        EIP712Domain: [
+          { name: 'name', type: 'string' },
+          { name: 'version', type: 'string' },
+          { name: 'chainId', type: 'uint256' },
+          { name: 'verifyingContract', type: 'address' },
+        ],
+        Permit: types.Permit,
+      },
+    };
+    const signature = (await this._web3.currentProvider!.request({
+      method: 'eth_signTypedData_v4',
+      params: [signer, JSON.stringify(typedData)],
+    })) as unknown as string;
+    const r = signature.slice(0, 66);
+    const s = '0x' + signature.slice(66, 130);
+    const v = parseInt(signature.slice(130, 132), 16);
+    return { nonce, deadline, r, s, v };
+  }
+
+  public async createTicketWithDaiPermit(numbers: number[], account?: string): Promise<Receipt> {
+    const from = account || this._defaultSigner;
+    if (!from) {
+      throw Error(
+        'A signer is required to sign the permit; you must specify one either in the `account` argument or in the `defaultSigner` option at construction.',
+      );
+    }
+    const { nonce, deadline, r, s, v } = await this._signDaiPermit(from);
+    if (numbers.length > 6) {
+      return await this._lotteryContract.methods
+        .createTicketWithDaiPermit(
+          Lottery.NULL_REFERRAL_CODE,
+          numbers,
+          nonce,
+          deadline,
+          /*allowed=*/ true,
+          v,
+          r,
+          s,
+        )
+        .send({ from });
+    } else {
+      return await this._lotteryContract.methods
+        .createTicketWithDaiPermit(
+          Lottery.NULL_REFERRAL_CODE,
+          numbers,
+          nonce,
+          deadline,
+          /*allowed=*/ true,
+          v,
+          r,
+          s,
+        )
         .send({ from });
     }
   }
