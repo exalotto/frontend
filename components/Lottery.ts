@@ -267,11 +267,10 @@ export class Lottery {
     return await this._lotteryContract.methods.getTicketPrice(numbers).call();
   }
 
-  public async createTicket(numbers: number[], account?: string): Promise<Receipt> {
-    const from = account || this._defaultSigner || void 0;
-    const price = await this._lotteryContract.methods.getTicketPrice(numbers).call();
-    const currencyToken = await this.getCurrencyToken();
-    await currencyToken.methods.approve(this._lotteryAddress, price).send({ from });
+  public async _createTicketInternal(
+    numbers: number[],
+    from: string | undefined,
+  ): Promise<Receipt> {
     if (numbers.length > 6) {
       return await this._lotteryContract.methods
         .createTicket(Lottery.NULL_REFERRAL_CODE, numbers)
@@ -281,6 +280,14 @@ export class Lottery {
         .createTicket6(Lottery.NULL_REFERRAL_CODE, numbers)
         .send({ from });
     }
+  }
+
+  public async createTicket(numbers: number[], account?: string): Promise<Receipt> {
+    const from = account || this._defaultSigner || void 0;
+    const price = (await this._lotteryContract.methods.getTicketPrice(numbers).call()) as bigint;
+    const currencyToken = await this.getCurrencyToken();
+    await currencyToken.methods.approve(this._lotteryAddress, price).send({ from });
+    return this._createTicketInternal(numbers, from);
   }
 
   private async _signPermit(signer: string, value: bigint) {
@@ -339,6 +346,13 @@ export class Lottery {
       );
     }
     const price = (await this._lotteryContract.methods.getTicketPrice(numbers).call()) as bigint;
+    const currencyToken = await this.getCurrencyToken();
+    const allowance = (await currencyToken.methods
+      .allowance(from, this._lotteryAddress)
+      .call()) as bigint;
+    if (allowance >= price) {
+      return await this._createTicketInternal(numbers, account);
+    }
     const { deadline, r, s, v } = await this._signPermit(from, price);
     if (numbers.length > 6) {
       return await this._lotteryContract.methods
@@ -406,6 +420,14 @@ export class Lottery {
       throw Error(
         'A signer is required to sign the permit; you must specify one either in the `account` argument or in the `defaultSigner` option at construction.',
       );
+    }
+    const price = (await this._lotteryContract.methods.getTicketPrice(numbers).call()) as bigint;
+    const currencyToken = await this.getCurrencyToken();
+    const allowance = (await currencyToken.methods
+      .allowance(from, this._lotteryAddress)
+      .call()) as bigint;
+    if (allowance >= price) {
+      return await this._createTicketInternal(numbers, account);
     }
     const { nonce, deadline, r, s, v } = await this._signDaiPermit(from);
     if (numbers.length > 6) {
