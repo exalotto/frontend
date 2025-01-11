@@ -105,7 +105,7 @@ const FormContent = ({ ico }: { ico: Contract<typeof ICO.abi> }) => {
           className="mb-1"
           onSubmit={async e => {
             e.preventDefault();
-            if (!e.target.checkValidity()) {
+            if (!(e.target as HTMLFormElement).checkValidity()) {
               return;
             }
             if (account) {

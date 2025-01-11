@@ -5,7 +5,7 @@ import type { PropsWithChildren } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { Dropdown as BSDropdown } from 'react-bootstrap';
+import { Dropdown as BSDropdown, type DropdownItemProps } from 'react-bootstrap';
 
 export const Dropdown = ({
   variant,
@@ -30,14 +30,7 @@ export const Dropdown = ({
   </div>
 );
 
-const DropdownItem = ({
-  text,
-  active,
-  ...rest
-}: PropsWithChildren & {
-  text: string;
-  active: boolean;
-}) => (
+const DropdownItem = ({ text, active, ...rest }: DropdownItemProps & { text: string }) => (
   <li>
     <BSDropdown.Item className={active ? 'dropdown-item--active' : ''} {...rest}>
       {text}

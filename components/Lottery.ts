@@ -520,12 +520,12 @@ export class Lottery {
         const { timestamp } = await this._web3.eth.getBlock(blockNumber);
         return timestamp;
       })(),
-      this._lotteryContract.getPastEvents('Ticket', {
+      this._lotteryContract.getPastEvents('Ticket' as never, {
         filter: { round, id },
         fromBlock: blockNumber,
         toBlock: blockNumber,
       }) as Promise<EventLog[]>,
-      this._lotteryContract.getPastEvents('Ticket6', {
+      this._lotteryContract.getPastEvents('Ticket6' as never, {
         filter: { round, id },
         fromBlock: blockNumber,
         toBlock: blockNumber,
@@ -614,12 +614,12 @@ export class Lottery {
   public async getExtendedDrawData(draw: Draw): Promise<DrawExtended> {
     const result: DrawExtended = { ...draw };
     const [drawResults, closureResults] = await Promise.all([
-      this._lotteryContract.getPastEvents('VRFRequest', {
+      this._lotteryContract.getPastEvents('VRFRequest' as never, {
         filter: { round: draw.round },
         fromBlock: draw.drawBlock,
         toBlock: draw.drawBlock,
       }) as Promise<EventLog[]>,
-      this._lotteryContract.getPastEvents('Draw', {
+      this._lotteryContract.getPastEvents('Draw' as never, {
         filter: { round: draw.round },
         fromBlock: draw.closureBlock,
         toBlock: draw.closureBlock,
