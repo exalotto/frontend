@@ -23,7 +23,7 @@ const DynamicStatus = ({
       setBalance(null);
       setUnclaimed(null);
       const balance = web3!.utils.toBigInt(await token.methods.balanceOf(account).call());
-      if (balance != BigInt(0)) {
+      if (balance != 0n) {
         setShow(false);
         return;
       }
@@ -56,7 +56,7 @@ const DynamicStatus = ({
           Your <code>EXL</code> balance is: {formatBigNumber(web3!, balance)}
         </p>
       ) : null}
-      {unclaimed && unclaimed != BigInt(0) ? (
+      {unclaimed ? (
         <p>
           You have unclaimed fees: $ {formatBigNumber(web3!, unclaimed)} &#8211;{' '}
           <button

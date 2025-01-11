@@ -6,7 +6,7 @@ import type Web3 from 'web3';
 
 import { useWeb3React } from '@web3-react/core';
 
-import { Lottery } from './Lottery';
+import { Lottery, SpendingApprovalMode } from './Lottery';
 
 export interface Web3Context {
   active: boolean;
@@ -21,6 +21,17 @@ export const LotteryContext = React.createContext({
 
 export const useLottery = () => useContext(LotteryContext);
 
+function sanitizeSpendingApprovalMode(): SpendingApprovalMode {
+  switch (process.env.NEXT_PUBLIC_SPENDING_APPROVAL_MODE) {
+    case 'eip2612':
+      return 'eip2612';
+    case 'dai':
+      return 'dai';
+    default:
+      return 'manual';
+  }
+}
+
 export const LotteryContextProvider = ({ children }: PropsWithChildren) => {
   const context = useWeb3React<Web3>();
   const [lottery, setLottery] = useState<Lottery | null>(null);
@@ -29,8 +40,9 @@ export const LotteryContextProvider = ({ children }: PropsWithChildren) => {
       setLottery(
         new Lottery({
           web3: context.library,
-          address: process.env.NEXT_PUBLIC_LOTTERY_ADDRESS!,
+          lotteryAddress: process.env.NEXT_PUBLIC_LOTTERY_ADDRESS!,
           defaultSigner: context.account || void 0,
+          defaultSpendingApprovalMode: sanitizeSpendingApprovalMode(),
         }),
       );
     } else {

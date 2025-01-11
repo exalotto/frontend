@@ -175,9 +175,9 @@ const PlayButton = ({ numbers, onPlayed }: { numbers: number[]; onPlayed: () => 
     let receipt;
     try {
       if (context!.account) {
-        receipt = await lottery!.createTicketWithDaiPermit(numbers, context!.account);
+        receipt = await lottery!.createTicketAuto(numbers, context!.account);
       } else {
-        receipt = await lottery!.createTicketWithDaiPermit(numbers);
+        receipt = await lottery!.createTicketAuto(numbers);
       }
     } catch (error) {
       console.error(error);

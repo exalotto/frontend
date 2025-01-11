@@ -25,13 +25,13 @@ export function range(length: number): number[] {
 
 function _choose(n: bigint, k: bigint): bigint {
   if (k > n) {
-    return BigInt(0);
-  } else if (BigInt(0) === k) {
-    return BigInt(1);
-  } else if (k * BigInt(2) > n) {
+    return 0n;
+  } else if (0n === k) {
+    return 1n;
+  } else if (k * 2n > n) {
     return _choose(n, n - k);
   } else {
-    return (n * _choose(n - BigInt(1), k - BigInt(1))) / k;
+    return (n * _choose(n - 1n, k - 1n)) / k;
   }
 }
 
@@ -47,7 +47,7 @@ export function divideBigInts(a: bigint, b: bigint): number {
 
 export function formatBigNumber(web3: Web3, value: unknown): string {
   const number = web3.utils.toBigInt(value);
-  const decimals = BigInt('1000000000000000000');
+  const decimals = 1000000000000000000n;
   const integer = number / decimals;
   const fractional = number % decimals;
   return integer.toString(10) + '.' + web3.utils.padLeft(fractional.toString(10), 18);

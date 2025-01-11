@@ -11,21 +11,25 @@ export const meta = {
 
 We are now raising money to fund ExaLotto's jackpot and DAO!
 
+We're selling our [EXL token][exl-polygonscan] in exchange for the [Dai stablecoin][dai-uniswap].
+
 <ICOForm />
+
+NOTE: `EXL` is not yet available for trade on Uniswap, it will become available after the ICO.
 
 ## Overview
 
 ExaLotto is a global, decentralized, trustless, autonomous, and provably fair lottery game. It's
-based on the [Ethereum blockchain][ethereum].
+based on [Ethereum][ethereum] and runs on the [Polygon PoS blockchain][polygon].
 
 No actor or institution can ever stop ExaLotto from running, manipulate it by biasing the game
 results, or steal prize money in any way. The entire process of drawing the numbers as well as the
 collection, custody, and distribution of prizes is implemented through smartcontracts published on
-Ethereum.
+chain.
 
 To win the game a player must predict at least 2 of the 6 numbers that will be drawn every week.
 Anyone can trigger the drawing process, and once triggered it will be carried out safely in a way
-that cannot be tampered with or altered.
+that cannot be altered or tampered with.
 
 ExaLotto is the safest and most rewarding lottery ever created, and it will last forever. We dream
 big: we want ExaLotto to be a _global_ lottery and have the largest jackpot ever!
@@ -35,12 +39,12 @@ big: we want ExaLotto to be a _global_ lottery and have the largest jackpot ever
 - **Global**: users can play from any country in the world as long as they have access to an
   Ethereum wallet.
 - **Decentralized**: 100% of the code runs on Ethereum smartcontracts. In principle, the game can be
-  played using [etherscan][exalotto-etherscan] alone.
+  played using [Polygonscan][exalotto-polygonscan] alone.
+- **Permissionless**: anyone can [trigger the weekly drawing process][draw].
 - **Autonomous**: anyone can join the DAO by buying the EXL token, voting proposals on
   [our Tally page][exalotto-tally], and driving the future of ExaLotto.
 - **Provably Fair**: random numbers are generated with a proof of randomness and can’t be altered or
   biased. We use the [ChainLink VRF][chainlink-vrf] for that purpose.
-- **Eternal**: it can never be stopped, anybody in the world can trigger the weekly drawing.
 
 ## ICO Allocation
 
@@ -52,7 +56,7 @@ to the Uniswap V3 position we'll open at ICO closure.
 
 ## Tokenomics
 
-ExaLotto has an ERC-20 token (trading symbol `EXL`, find it [here on Etherscan][exl-etherscan])
+ExaLotto has an ERC-20 token (trading symbol `EXL`, find it [here on Polygonscan][exl-polygonscan])
 providing its holders with a two-fold benefit:
 
 - Participation in the governance through voting on Tally.
@@ -100,7 +104,7 @@ The program will stop when 50% of the total supply is burned.
       <td>
         <strong>Oct 3890&nbsp;</strong>
       </td>
-      <td>&nbsp;ExaLotto still runs weekly draws with the biggest jackpots ever seen.</td>
+      <td>&nbsp;ExaLotto still runs weekly drawings with the biggest jackpots ever seen.</td>
     </tr>
   </tbody>
 </table>
@@ -122,15 +126,14 @@ Find us on Telegram at [t.me/ExaLotto_Official][exalotto-telegram]!
 
 ### 1. Who can access the ExaLotto ICO?
 
-Anyone with ETH can buy EXL. In fact, due to the nature of the Ethereum blockchain, it is not
-possible to restrict the sale of EXL to specific countries. However, if you are a resident of the
-United States of America (including its territories), Canada, Democratic People’s Republic of Korea,
-Cuba, Syria, Iran, Sudan, Crimea, People’s Republic of China, Bahamas, Belarus, Botswana, Burundi,
-Cambodia, Central African Republic, The Democratic Republic of Congo, Côte d’Ivoire, Cuba, Ethiopia,
-Ghana, Islamic Republic of Iran, Iraq, Lebanon, Libya, Mali, Myanmar, Nicaragua, Pakistan, Panama,
-Somalia, South Sudan, Sri Lanka, Sudan, Syrian Arab Republic, Trinidad and Tobago, Tunisia,
-Bolivarian Republic of Venezuela, Yemen, and Zimbabwe, we recommend **not** participating in the
-ICO.
+Anyone with Dai can buy EXL. In fact, due to the nature of the blockchain, it is not possible to
+restrict the sale of EXL to specific countries. However, if you are a resident of the United States
+of America (including its territories), Canada, Democratic People’s Republic of Korea, Cuba, Syria,
+Iran, Sudan, Crimea, People’s Republic of China, Bahamas, Belarus, Botswana, Burundi, Cambodia,
+Central African Republic, The Democratic Republic of Congo, Côte d’Ivoire, Cuba, Ethiopia, Ghana,
+Islamic Republic of Iran, Iraq, Lebanon, Libya, Mali, Myanmar, Nicaragua, Pakistan, Panama, Somalia,
+South Sudan, Sri Lanka, Sudan, Syrian Arab Republic, Trinidad and Tobago, Tunisia, Bolivarian
+Republic of Venezuela, Yemen, and Zimbabwe, we recommend **not** participating in the ICO.
 
 ### 2. What is the lock-up schedule of the tokens sold in the ICO?
 
@@ -140,20 +143,20 @@ EXL"_ button on this page or the soon-to-be [Partners page][partners].
 
 ### 3. How do I fund my purchase?
 
-You can buy EXL using ETH. Please find the [sale panel][sale-panel] at the top of this page.
+You can buy EXL using [Dai][dai]. Please find the [sale panel][sale-panel] at the top of this page.
 
 ### 4. How does the sale work?
 
 Enter the amount to buy in the [sale panel][sale-panel] and click _"Buy EXL"_. This will start a
-transaction with our [ICO smartcontract][ico-etherscan] (your wallet will ask confirmation before
+transaction with our [ICO smartcontract][ico-polygonscan] (your wallet will ask confirmation before
 proceeding).
 
-The smartcontract will act as an escrow and keep both the ETH you sent and the EXL you
-bought, keeping track of your EXL balance in its internal state. You can buy multiple times and all
-your tokens will add up in your balance. We provide 20% of the total supply for sale and that's the
-only limit to how much EXL you can buy.
+The smartcontract will act as an escrow and keep both the Dai you sent and the EXL you bought,
+keeping track of your EXL balance in its internal state. You can buy multiple times and all your
+tokens will add up in your balance. We provide 20% of the total supply for sale and that's the only
+limit to how much EXL you can buy.
 
-When we close the ICO the smartcontract will automatically distribute the accumulated ETH to the
+When we close the ICO the smartcontract will automatically distribute the accumulated Dai to the
 lottery and other addresses as described [above][ico-allocation], and allow you to redeem your EXL.
 Clicking the _"Redeem EXL"_ button will transfer your EXL balance to your wallet, at which point
 you'll be able to [trade EXL on Uniswap][exl-uniswap].
@@ -172,16 +175,18 @@ However, we recommend hodling your tokens for the reasons below. :)
    grow in the long term.
 
 [chainlink-vrf]: https://chain.link/vrf
-[exl-etherscan]: https://etherscan.io/token/0x47c0f5B9fFdcC1B295a9B722e19686490C1cbF6e
-[exl-uniswap]: https://app.uniswap.org/#/tokens/ethereum/0x47c0f5B9fFdcC1B295a9B722e19686490C1cbF6e
+[dai-uniswap]: https://app.uniswap.org/explore/tokens/polygon/0x8f3cf7ad23cd3cadbd9735aff958023239c6a063
+[draw]: /draw
+[exl-polygonscan]: https://polygonscan.com/token/0xE2F3057445e4ce9F78F56Ae00409C2C00165b49c
+[exl-uniswap]: https://app.uniswap.org/#/tokens/polygon/0xE2F3057445e4ce9F78F56Ae00409C2C00165b49c
 [ethereum]: https://ethereum.org
-[exalotto-etherscan]: https://etherscan.io/address/0x220414b459ba958ed38b0867b63dbcb27659de1e#readProxyContract
-[exalotto-tally]: https://www.tally.xyz/gov/eip155:1:0x7F5CA8e9664D66Fc7c11d26C7D9B750988d5c8a7
+[exalotto-polygonscan]: https://polygonscan.com/address/0xbeEfa6D02a429209d08cAC7a4247C60700bb4DB5#readProxyContract
+[exalotto-tally]: https://www.tally.xyz/gov/exalotto
 [exalotto-telegram]: https://t.me/ExaLotto_Official
 [ico-allocation]: #ico-allocation
-[ico-etherscan]: https://etherscan.io/address/0x264e877A05b49Ee79807975505b35cF525c5556d
-[ico-etherscan-relevant]: https://etherscan.io/address/0x264e877A05b49Ee79807975505b35cF525c5556d#code#F46#L1
+[ico-polygonscan]: https://polygonscan.com/address/0xd825A72dd97A7d9Df1E664237a5275B46F8f365B
 [partners]: /partners
+[polygon]: https://polygon.technology/polygon-pos
 [sale-panel]: #sale
 
 import { Article } from '@/components/Article';

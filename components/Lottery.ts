@@ -13,11 +13,25 @@ export type CurrencyTokenContract = Contract<typeof CurrencyTokenABI>;
 export type ControllerContract = Contract<typeof ControllerABI>;
 export type GovernanceTokenContract = Contract<typeof GovernanceTokenABI>;
 
+// Specifies how spending approvals are made. Three modes are available:
+//
+// * `manual` means the lottery client will request two separate transactions, one to approve the
+//   spending and one for the contract interaction;
+// * `erc2612` means the lottery client will first ask for an ERC-2612 signature (with no gas cost)
+//   and then perform the actual contract interaction;
+// * `dai` means the lottery client will use the non-compliant signature system similar to ERC-2612
+//   implemented in the Dai stablecoin (Dai signatures are slightly different from ERC-2612).
+//
+// Note that all ticket creation methods check for the available spending allowance first, and don't
+// ask for further approval if the allowance already covers the price.
+export type SpendingApprovalMode = 'manual' | 'eip2612' | 'dai';
+
 export interface Options {
   web3?: Web3;
   provider?: string;
-  address: string;
+  lotteryAddress: string;
   defaultSigner?: string;
+  defaultSpendingApprovalMode?: SpendingApprovalMode;
 }
 
 // Fetches a value lazily and asynchronously. The actual fetching is performed by a user-provided
@@ -157,25 +171,27 @@ export class Lottery {
   private readonly _lotteryAddress: string;
   private readonly _web3: Web3;
   private readonly _defaultSigner: string | null;
+  private readonly _spendingApprovalMode: SpendingApprovalMode;
   private readonly _lotteryContract: LotteryContract;
   private readonly _currencyTokenContract: AsyncValue<CurrencyTokenContract>;
   private readonly _controllerContract: AsyncValue<ControllerContract>;
   private readonly _governanceTokenContract: AsyncValue<GovernanceTokenContract>;
 
   public constructor(options: Options) {
-    if (!options.address) {
+    if (!options.lotteryAddress) {
       throw Error('the `address` option is required');
     }
     if (!options.web3 && !options.provider) {
       throw Error('either a Web3 instance or a `provider` must be specified in the options');
     }
-    this._lotteryAddress = options.address;
+    this._lotteryAddress = options.lotteryAddress;
     if (options.web3) {
       this._web3 = options.web3;
     } else {
       this._web3 = new Web3(options.provider);
     }
     this._defaultSigner = options.defaultSigner || null;
+    this._spendingApprovalMode = options.defaultSpendingApprovalMode || 'manual';
     this._lotteryContract = new this._web3.eth.Contract(LotteryABI, this._lotteryAddress);
     this._currencyTokenContract = new AsyncValue<CurrencyTokenContract>(async () => {
       const address: string = await this._lotteryContract.methods.currencyToken().call();
@@ -296,7 +312,7 @@ export class Lottery {
     const domain = {
       name: await currencyToken.methods.name().call(),
       version: '1',
-      chainId: parseInt(process.env.NEXT_PUBLIC_NETWORK_ID!, 10),
+      chainId: Number(await this._web3.eth.getChainId()),
       verifyingContract: currencyToken.options.address!,
     };
     const { timestamp } = await this._web3.eth.getBlock();
@@ -371,7 +387,7 @@ export class Lottery {
     const domain = {
       name: await currencyToken.methods.name().call(),
       version: '1',
-      chainId: parseInt(process.env.NEXT_PUBLIC_NETWORK_ID!, 10),
+      chainId: Number(await this._web3.eth.getChainId()),
       verifyingContract: currencyToken.options.address!,
     };
     const nonce = (await permit.methods.getNonce(signer).call()) as bigint;
@@ -456,6 +472,19 @@ export class Lottery {
           s,
         )
         .send({ from });
+    }
+  }
+
+  // Creates a ticket using the default spending approval mode specified in the construction
+  // options, or `manual` if none was specified.
+  public createTicketAuto(numbers: number[], account?: string): Promise<Receipt> {
+    switch (this._spendingApprovalMode) {
+      case 'manual':
+        return this.createTicket(numbers, account);
+      case 'eip2612':
+        return this.createTicketWithPermit(numbers, account);
+      case 'dai':
+        return this.createTicketWithDaiPermit(numbers, account);
     }
   }
 

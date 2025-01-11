@@ -12,62 +12,75 @@ import { divideBigInts, formatBigNumber, useAsyncEffect } from '@/components/Uti
 
 import ICO from '@/components/ICO.json';
 
-// 1 ETH in wei, i.e. 1e18.
-const DECIMALS = BigInt('1000000000000000000');
+// 1 EXL in wei, i.e. 1e18.
+const DECIMALS = 1000000000000000000n;
 
 // Total EXL supply in EXL-wei (1e27).
-const TOTAL_SUPPLY = BigInt('1000000000000000000000000000');
+const TOTAL_SUPPLY = 1000000000000000000000000000n;
 
 const FormContent = ({ ico }: { ico: Contract<typeof ICO.abi> }) => {
   const { library, account } = useWeb3React<Web3>();
   const web3 = library!;
-  const hundred = BigInt(100);
-  const decimals = DECIMALS;
-  const totalSupply = TOTAL_SUPPLY;
+  const fromWei = (value: bigint) => web3.utils.fromWei(value, 'ether');
+  const toWei = (value: string | number) => web3.utils.toBigInt(web3.utils.toWei(value, 'ether'));
   const [price, setPrice] = useState<bigint | null>(null);
   const [balance, setBalance] = useState<bigint | null>(null);
   const [saleOpen, setSaleOpen] = useState(false);
-  const [ethText, setEthText] = useState('0');
-  const [ethAmount, setEthAmount] = useState(BigInt(0));
-  const [exlText, setElotText] = useState('0');
-  const [exlAmount, setElotAmount] = useState(BigInt(0)); // eslint-disable-line no-unused-vars
+  const [daiText, setDaiText] = useState('');
+  const [, setDaiAmount] = useState(0n);
+  const [exlText, setExlText] = useState('0');
+  const [exlAmount, setExlAmount] = useState(0n);
   const [shareText, setShareText] = useState('0');
-  const [share, setShare] = useState(0); // eslint-disable-line no-unused-vars
-  const updateEth = (ethText: string) => {
-    setEthText(ethText);
-    const ethAmount = web3.utils.toBigInt(web3.utils.toWei(ethText, 'ether'));
-    setEthAmount(ethAmount);
-    const exlAmount = (ethAmount * decimals) / price!;
-    setElotText(web3.utils.fromWei(exlAmount, 'ether'));
-    setElotAmount(exlAmount);
-    const share = (exlAmount * hundred * decimals) / totalSupply;
-    setShareText('' + share);
-    setShare(Number(share));
+  const [, setShare] = useState(0);
+  const updateDai = (daiText: string) => {
+    setDaiText(daiText);
+    const daiAmount = toWei(daiText);
+    setDaiAmount(daiAmount);
+    if (price) {
+      const exlAmount = (daiAmount * DECIMALS) / price;
+      setExlText(fromWei(exlAmount));
+      setExlAmount(exlAmount);
+      const share = divideBigInts(exlAmount, TOTAL_SUPPLY);
+      setShareText('' + share * 100);
+      setShare(share);
+    } else {
+      setExlText('');
+      setExlAmount(0n);
+      setShareText('');
+      setShare(0);
+    }
   };
-  const updateElot = (exlText: string) => {
-    setElotText(exlText);
-    const exlAmount = web3.utils.toBigInt(web3.utils.toWei(exlText, 'ether'));
-    const ethAmount = (exlAmount * price!) / decimals;
-    setEthText(web3.utils.fromWei(ethAmount, 'ether'));
-    setEthAmount(ethAmount);
-    setElotAmount(exlAmount);
-    const share = divideBigInts(exlAmount * hundred * decimals, totalSupply);
-    setShareText('' + share);
+  const updateExl = (exlText: string) => {
+    setExlText(exlText);
+    const exlAmount = toWei(exlText);
+    setExlAmount(exlAmount);
+    if (price) {
+      const daiAmount = (exlAmount * price) / DECIMALS;
+      setDaiText(fromWei(daiAmount));
+      setDaiAmount(daiAmount);
+    } else {
+      setDaiText('');
+      setDaiAmount(0n);
+    }
+    const share = divideBigInts(exlAmount, TOTAL_SUPPLY);
+    setShareText('' + share * 100);
     setShare(share);
   };
   const updateShare = (shareText: string) => {
     setShareText(shareText);
-    let share = web3.utils.toBigInt(web3.utils.toWei(shareText, 'ether')) / hundred;
-    if (share > decimals) {
-      share = decimals;
+    const share = parseFloat(shareText) / 100;
+    setShare(share);
+    const exlAmount = toWei(share) * web3.utils.toBigInt(fromWei(TOTAL_SUPPLY));
+    setExlText(fromWei(exlAmount));
+    setExlAmount(exlAmount);
+    if (price) {
+      const daiAmount = (exlAmount * price) / DECIMALS;
+      setDaiText(fromWei(daiAmount));
+      setDaiAmount(daiAmount);
+    } else {
+      setDaiText('');
+      setDaiAmount(0n);
     }
-    const exlAmount = (totalSupply * share) / decimals;
-    const ethAmount = (exlAmount * price!) / decimals;
-    setEthText(web3.utils.fromWei(ethAmount, 'ether'));
-    setEthAmount(ethAmount);
-    setElotText(web3.utils.fromWei(exlAmount, 'ether'));
-    setElotAmount(exlAmount);
-    setShare(Number(share * hundred));
   };
   useAsyncEffect(async () => {
     const price = web3.utils.toBigInt(await ico.methods.price().call());
@@ -76,15 +89,13 @@ const FormContent = ({ ico }: { ico: Contract<typeof ICO.abi> }) => {
   }, [web3, ico]);
   useAsyncEffect(async () => {
     if (account) {
-      setBalance(web3.utils.toBigInt(await ico.methods.balance(account).call()));
+      setBalance(web3.utils.toBigInt(await ico.methods.balanceOf(account).call()));
     } else {
       setBalance(null);
     }
   }, [web3, account, ico]);
   useEffect(() => {
-    if (price !== null) {
-      updateShare('1');
-    }
+    updateShare('1');
     // eslint-disable-next-line
   }, [price]);
   return (
@@ -98,10 +109,7 @@ const FormContent = ({ ico }: { ico: Contract<typeof ICO.abi> }) => {
               return;
             }
             if (account) {
-              await ico.methods.buy().send({
-                from: account,
-                value: '' + ethAmount,
-              });
+              await ico.methods.buyTokens(exlAmount).send({ from: account });
             } else {
               showModal('wallet');
             }
@@ -115,7 +123,7 @@ const FormContent = ({ ico }: { ico: Contract<typeof ICO.abi> }) => {
               <Form.Control
                 type="static"
                 disabled
-                value={price ? `${formatBigNumber(web3, price)} ETH` : ''}
+                value={price ? `${formatBigNumber(web3, price)} Dai` : ''}
               />
             </Col>
           </Form.Group>
@@ -135,14 +143,14 @@ const FormContent = ({ ico }: { ico: Contract<typeof ICO.abi> }) => {
           ) : null}
           <Row className="mb-4">
             <Form.Group as={Col} className="mx-sm-3">
-              <Form.Label>ETH</Form.Label>
+              <Form.Label>Dai</Form.Label>
               <Form.Control
                 type="text"
                 disabled={price === null}
                 required
                 pattern="[0-9]*(\.[0-9]*)?"
-                value={ethText}
-                onChange={({ target }) => updateEth(target.value)}
+                value={daiText}
+                onChange={({ target }) => updateDai(target.value)}
               />
             </Form.Group>
             <Form.Group as={Col} className="mx-sm-3">
@@ -152,7 +160,7 @@ const FormContent = ({ ico }: { ico: Contract<typeof ICO.abi> }) => {
                 disabled={price === null}
                 pattern="[0-9]*(\.[0-9]*)?"
                 value={exlText}
-                onChange={({ target }) => updateElot(target.value)}
+                onChange={({ target }) => updateExl(target.value)}
               />
             </Form.Group>
             <Form.Group as={Col} className="mx-sm-3">
@@ -180,7 +188,7 @@ const FormContent = ({ ico }: { ico: Contract<typeof ICO.abi> }) => {
                 className="btn btn-details mb-4"
                 onClick={async () => {
                   if (account) {
-                    await ico.methods.claim().send({ from: account });
+                    await ico.methods.withdrawAll().send({ from: account });
                   } else {
                     showModal('wallet');
                   }
