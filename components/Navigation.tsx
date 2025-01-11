@@ -52,6 +52,9 @@ const navigationMenuItems = [
   },
 ];
 
+const matchPath = (pathname: string, target: string) =>
+  pathname === target || pathname === target + '/';
+
 const NavigationMenuItem = ({
   caption,
   target,
@@ -60,7 +63,7 @@ const NavigationMenuItem = ({
   target: string;
 }) => {
   const pathname = usePathname();
-  const active = pathname === target || pathname === target + '/';
+  const active = matchPath(pathname, target);
   return (
     <li className={`top-menu__item ${active ? 'top-menu__item--active' : ''}`}>
       <Link href={target} className="top-menu__link">
@@ -88,7 +91,7 @@ export const NavigationMenu = () => {
 
 const findCurrentCaption = (pathname: string) => {
   for (const item of navigationMenuItems) {
-    if (pathname === item.target) {
+    if (matchPath(pathname, item.target)) {
       return item.caption;
     }
   }
