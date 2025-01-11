@@ -26,3 +26,22 @@ export const Article = ({
     </section>
   </MainBody>
 );
+
+export const Whitepaper = ({
+  meta: { date } = {},
+  children,
+}: PropsWithChildren & { meta: { date?: string } }) => (
+  <MainBody>
+    <ArticleHeader />
+    <section className="whitepaper">
+      <Container>
+        <div className="whitepaper__wrap d-flex justify-content-start align-items-start flex-column flex-lg-row">
+          <aside className="whitepaper__sidebar">
+            <div className="whitepaper__date">{date}</div>
+          </aside>
+          <article className="whitepaper__body whitepaper-text">{children}</article>
+        </div>
+      </Container>
+    </section>
+  </MainBody>
+);
