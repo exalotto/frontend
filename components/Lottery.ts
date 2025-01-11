@@ -259,11 +259,11 @@ export class Lottery {
     return await this._lotteryContract.methods.paused().call();
   }
 
-  public async getJackpot(): Promise<string> {
-    return await this._lotteryContract.methods.getJackpot().call();
+  public async getJackpot(): Promise<bigint> {
+    return this._web3.utils.toBigInt(await this._lotteryContract.methods.getJackpot().call());
   }
 
-  public async subscribeToJackpot(callback: (jackpot: string) => unknown) {
+  public async subscribeToJackpot(callback: (jackpot: bigint) => unknown) {
     const fetch = async () => callback(await this.getJackpot());
     const subscription = await this._web3.eth.subscribe('newBlockHeaders');
     subscription.on('data', () => {
@@ -275,12 +275,16 @@ export class Lottery {
 
   // TODO: referral code management.
 
-  public async getBaseTicketPrice(): Promise<string> {
-    return await this._lotteryContract.methods.getBaseTicketPrice().call();
+  public async getBaseTicketPrice(): Promise<bigint> {
+    return this._web3.utils.toBigInt(
+      await this._lotteryContract.methods.getBaseTicketPrice().call(),
+    );
   }
 
-  public async getTicketPrice(numbers: number[]): Promise<string> {
-    return await this._lotteryContract.methods.getTicketPrice(numbers).call();
+  public async getTicketPrice(numbers: number[]): Promise<bigint> {
+    return this._web3.utils.toBigInt(
+      await this._lotteryContract.methods.getTicketPrice(numbers).call(),
+    );
   }
 
   public async _createTicketInternal(
@@ -300,9 +304,16 @@ export class Lottery {
 
   public async createTicket(numbers: number[], account?: string): Promise<Receipt> {
     const from = account || this._defaultSigner || void 0;
-    const price = (await this._lotteryContract.methods.getTicketPrice(numbers).call()) as bigint;
+    const price = this._web3.utils.toBigInt(
+      await this._lotteryContract.methods.getTicketPrice(numbers).call(),
+    );
     const currencyToken = await this.getCurrencyToken();
-    await currencyToken.methods.approve(this._lotteryAddress, price).send({ from });
+    const allowance = this._web3.utils.toBigInt(
+      await currencyToken.methods.allowance(from, this._lotteryAddress).call(),
+    );
+    if (allowance < price) {
+      await currencyToken.methods.approve(this._lotteryAddress, price).send({ from });
+    }
     return this._createTicketInternal(numbers, from);
   }
 
@@ -310,7 +321,7 @@ export class Lottery {
     const currencyToken = await this.getCurrencyToken();
     const permit = new this._web3.eth.Contract(ERC20PermitABI, currencyToken.options.address!);
     const domain = {
-      name: await currencyToken.methods.name().call(),
+      name: '' + (await currencyToken.methods.name().call()),
       version: '1',
       chainId: Number(await this._web3.eth.getChainId()),
       verifyingContract: currencyToken.options.address!,
@@ -321,7 +332,7 @@ export class Lottery {
       owner: signer,
       spender: this._lotteryAddress,
       value: value.toString(10),
-      nonce: ((await permit.methods.nonces(signer).call()) as bigint).toString(),
+      nonce: this._web3.utils.toBigInt(await permit.methods.nonces(signer).call()).toString(),
       deadline,
     };
     const typedData = {
@@ -361,11 +372,13 @@ export class Lottery {
         'A signer is required to sign the permit; you must specify one either in the `account` argument or in the `defaultSigner` option at construction.',
       );
     }
-    const price = (await this._lotteryContract.methods.getTicketPrice(numbers).call()) as bigint;
+    const price = this._web3.utils.toBigInt(
+      await this._lotteryContract.methods.getTicketPrice(numbers).call(),
+    );
     const currencyToken = await this.getCurrencyToken();
-    const allowance = (await currencyToken.methods
-      .allowance(from, this._lotteryAddress)
-      .call()) as bigint;
+    const allowance = this._web3.utils.toBigInt(
+      await currencyToken.methods.allowance(from, this._lotteryAddress).call(),
+    );
     if (allowance >= price) {
       return await this._createTicketInternal(numbers, account);
     }
@@ -385,12 +398,12 @@ export class Lottery {
     const currencyToken = await this.getCurrencyToken();
     const permit = new this._web3.eth.Contract(DaiPermitABI, currencyToken.options.address!);
     const domain = {
-      name: await currencyToken.methods.name().call(),
+      name: '' + (await currencyToken.methods.name().call()),
       version: '1',
       chainId: Number(await this._web3.eth.getChainId()),
       verifyingContract: currencyToken.options.address!,
     };
-    const nonce = (await permit.methods.getNonce(signer).call()) as bigint;
+    const nonce = this._web3.utils.toBigInt(await permit.methods.getNonce(signer).call());
     const { timestamp } = await this._web3.eth.getBlock();
     const deadline = Number(timestamp) + 3600;
     const message = {
@@ -437,11 +450,13 @@ export class Lottery {
         'A signer is required to sign the permit; you must specify one either in the `account` argument or in the `defaultSigner` option at construction.',
       );
     }
-    const price = (await this._lotteryContract.methods.getTicketPrice(numbers).call()) as bigint;
+    const price = this._web3.utils.toBigInt(
+      await this._lotteryContract.methods.getTicketPrice(numbers).call(),
+    );
     const currencyToken = await this.getCurrencyToken();
-    const allowance = (await currencyToken.methods
-      .allowance(from, this._lotteryAddress)
-      .call()) as bigint;
+    const allowance = this._web3.utils.toBigInt(
+      await currencyToken.methods.allowance(from, this._lotteryAddress).call(),
+    );
     if (allowance >= price) {
       return await this._createTicketInternal(numbers, account);
     }
@@ -489,12 +504,14 @@ export class Lottery {
   }
 
   public async getCurrentRound(): Promise<number> {
-    const round = await this._lotteryContract.methods.getCurrentRound().call();
-    return parseInt(round as unknown as string, 10);
+    const round = this._web3.utils.toBigInt(
+      await this._lotteryContract.methods.getCurrentRound().call(),
+    );
+    return Number(round);
   }
 
   public async getTicketIds(account: string): Promise<number[]> {
-    const ids: string[] = await this._lotteryContract.methods.getTicketIds(account).call();
+    const ids: never[] = await this._lotteryContract.methods.getTicketIds(account).call();
     return ids.map(id => parseInt(id, 10));
   }
 
@@ -573,8 +590,8 @@ export class Lottery {
   }
 
   public async getTimeOfNextDraw(): Promise<Date> {
-    const nextDrawTime = await this._lotteryContract.methods.getNextDrawTime().call();
-    return new Date(parseInt(nextDrawTime as unknown as string, 10) * 1000);
+    const nextDrawTime: unknown = await this._lotteryContract.methods.getNextDrawTime().call();
+    return new Date(parseInt(nextDrawTime as string, 10) * 1000);
   }
 
   public async getDrawData(round?: number): Promise<Draw> {

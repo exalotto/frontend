@@ -109,16 +109,16 @@ const NextDraw = ({ lottery }: { lottery: Lottery | null }) => {
 export const Jackpot = () => {
   const { lottery } = useLottery();
   const [jackpot, setJackpot] = useState<number | null>(null);
-  const setJackpotFromString = (jackpot: string) => {
+  const updateJackpot = (jackpot: bigint) => {
     setJackpot(parseFloat(Web3.utils.fromWei(jackpot, 'ether')));
   };
   useAsyncEffect(async () => {
     if (!lottery) {
       return () => {};
     }
-    setJackpotFromString(await lottery.getJackpot());
+    updateJackpot(await lottery.getJackpot());
     try {
-      const subscription = await lottery.subscribeToJackpot(setJackpotFromString);
+      const subscription = await lottery.subscribeToJackpot(updateJackpot);
       return () => {
         subscription.cancel();
       };
