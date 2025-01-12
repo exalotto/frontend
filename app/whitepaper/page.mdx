@@ -35,7 +35,7 @@ them to several issues:
   drawing process, as well as the actual value of the ticket sales. The drawn numbers may be biased
   to favor specific players, and / or the lottery operator may advertise a jackpot that is
   significantly lower (but still attractive enough) than the ticket sales. It is certainly
-  suspicious that many lotteries constantly advertise perfectly round-numbered jackpots like $1M.
+  suspicious that many lotteries constantly advertise perfectly round-numbered jackpots like \$1M.
 
 Case in point, [Hot Lotto][hot-lotto] has suffered one of the most famous lottery fraud scandals
 (not necessarily the worst). Other known frauds include a [Serbian lottery announcing the numbers
@@ -73,23 +73,23 @@ Given that the target price of a 6-number ticket is \$1.50, the price of a highe
 $k$ numbers is calculated multiplying \$1.50 by the binomial coefficient $k \choose 6$. This results
 in the following prices:
 
-| Numbers in the ticket | Number of 6-combinations | Price       |
-| --------------------- | ------------------------ | ----------- |
-| 6                     | 1                        | $ 1.50      |
-| 7                     | 7                        | $ 10.50     |
-| 8                     | 28                       | $ 42.00     |
-| 9                     | 84                       | $ 126.00    |
-| 10                    | 210                      | $ 315.00    |
-| 11                    | 462                      | $ 693.00    |
-| 12                    | 924                      | $ 1,386.00  |
-| 13                    | 1716                     | $ 2,574.00  |
-| 14                    | 3003                     | $ 4,504.50  |
-| 15                    | 5005                     | $ 7,507.50  |
-| 16                    | 8008                     | $ 12,012.00 |
-| 17                    | 12376                    | $ 18,564.00 |
-| 18                    | 18564                    | $ 27,846.00 |
-| 19                    | 27132                    | $ 40,698.00 |
-| 20                    | 38760                    | $ 58,140.00 |
+| Numbers in the ticket | Number of 6-combinations | Price        |
+| --------------------- | ------------------------ | ------------ |
+| 6                     | 1                        | \$ 1.50      |
+| 7                     | 7                        | \$ 10.50     |
+| 8                     | 28                       | \$ 42.00     |
+| 9                     | 84                       | \$ 126.00    |
+| 10                    | 210                      | \$ 315.00    |
+| 11                    | 462                      | \$ 693.00    |
+| 12                    | 924                      | \$ 1,386.00  |
+| 13                    | 1716                     | \$ 2,574.00  |
+| 14                    | 3003                     | \$ 4,504.50  |
+| 15                    | 5005                     | \$ 7,507.50  |
+| 16                    | 8008                     | \$ 12,012.00 |
+| 17                    | 12376                    | \$ 18,564.00 |
+| 18                    | 18564                    | \$ 27,846.00 |
+| 19                    | 27132                    | \$ 40,698.00 |
+| 20                    | 38760                    | \$ 58,140.00 |
 
 Five different winning categories are defined:
 
@@ -355,7 +355,7 @@ winning category) is $k = 2$.
 
 The probability of an event is calculated by dividing the number of favorable cases by the number of total cases.
 
-Assuming all tickets have 6 numbers for simplicity, the number of total cases is ${90 \choose 6}$.
+Assuming all tickets have 6 numbers for simplicity, the number of total cases is $90 \choose 6$.
 Let's then calculate the number of favorable cases for matching _exactly_ 2 numbers, which is our
 worst case because the 2-match category will often give us the largest amount of processing work.
 The number of ways to match exactly 2 numbers is the number of ways to choose 2 of the drawn numbers
@@ -444,7 +444,7 @@ H = P_{a_1} \cdot P_{a_2} \cdot P_{a_3} \cdot P_{a_4} \cdot P_{a_5} \cdot P_{a_6
 $$
 
 Storing these numbers is not a problem thanks to the 256-bit integers used by Solidity. For a
-20-number ticket, which has a hefty base cost of $58,140 as per the [price table
+20-number ticket, which has a hefty base cost of \$58,140 as per the [price table
 above](#game-description), we have:
 
 $$
@@ -496,7 +496,7 @@ $$
 Assuming cold access for all of them for the worst case we get a gas cost of
 $238 \cdot 20000 = 4760000$ units, or 2.38 POL at a 500 Gwei gas cost. The ticket itself would cost
 \$42.00, so the gas fee is only ~5.67% of the ticket price as opposed to 38% for the 6-ticket. That
-is because the ticket price is proportional to the number of 6-combinations (${n \choose 6}$ for an
+is because the ticket price is proportional to the number of 6-combinations ($n \choose 6$ for an
 $n$-ticket), while the gas fee is proportional to the number of storage slots
 ($\sum_{i = 2}^{6} {n \choose i}$ for an $n$-ticket). When $n$ grows, the latter grows slower than
 the former.
