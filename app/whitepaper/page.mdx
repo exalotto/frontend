@@ -339,9 +339,7 @@ This measure does not depend on $p_k$ or any other $k$-dependent parameter, so *
 have the same size**. This is unlike most other lotteries, which allocate seemingly arbitrary or
 inadequately explained shares of the revenue to the various categories.
 
-## Lottery Algorithm
-
-### Scaling Challenges
+## Scaling Challenges
 
 A lottery game is based on the core idea that a large number of players pays a small amount each, so
 we need our implementation to scale to large numbers of tickets, e.g. 1 million per round or even
@@ -388,7 +386,7 @@ implement a naive drawing algorithm that scans all tickets and finds the winners
 matches of each one; even if somehow we knew the list of winners for a category we would not be able
 to attribute or transfer their prizes.
 
-### Ticket Indexing
+## Ticket Indexing
 
 The problem discussed above poses two fundamental requirements on our implementation:
 
@@ -411,7 +409,7 @@ tickets are sold, we need to progressively calculate and update the number of wi
 costs to unacceptable levels. In the following sections we will describe the required algorithms and
 analyze the resulting gas costs.
 
-### Indexing Algorithm
+## Indexing Algorithm
 
 Let us define a bijection from the first 90 positive naturals 1, 2, 3, ... to the first 90 primes 2,
 3, 5, ...
@@ -464,9 +462,17 @@ $$
 
 with $d_1$, $d_2$, $d_3$, $d_4$, $d_5$, and $d_6$ being the 6 drawn numbers.
 
-This provides an easy way to find out $H_6$ in O(1), but of course we need to repeat the process for
-all other winning categories. It will get more expensive for other categories because there will be
-many ways to choose 2 numbers out of the 6 drawn ones, many ways to choose 3 numbers, etc.
+With a small abuse of terminology we will call the $H$ numbers **ticket hashes**. They are not
+really hash numbers in the traditional cryptographic sense because a hash is supposed be easy to
+calculate and hard to invert, while our ticket hashes are fairly easy to invert. We still think the
+word "hash" is appropriate because we use these numbers as indices in associative data structures
+(namely Solidity `mapping`s) and they are also deterministic and unique for a given set of numbers
+independently of their order.
+
+Our hash system provides an easy way to find $H_6$ in O(1), but of course we need to repeat the
+process for all other winning categories. It will get more expensive for other categories because
+there will be many ways to choose 2 numbers out of the 6 drawn ones, many ways to choose 3 numbers,
+etc. (We can rank our hashes and call $H_6$ the _6-hash_, $H_5$ the _5-hashes_, etc.)
 
 In total, the drawing algorithm will need to look up:
 
@@ -524,6 +530,252 @@ Here is a breakdown of all relative gas costs for the tickets up to 20 numbers:
 Gas fees are usually much lower than 500 Gwei and not all tickets will perform cold access on all
 slots, so the average ticket prices will be much better.
 
+Based on everything discussed so far we can write a Solidity function called `indexTicket` that
+takes $k$ numbers between 1 and 90 inclusive (the numbers chosen by the player when buying the
+ticket) and indexes all possible 2-combinations, 3-combinations, 4-combinations, 5-combinations, and
+6-combinations of those numbers in a data structure for later retrieval by the
+[drawing algorithm](#finding-the-winners).
+
+The indexing data structure, which we will call just `index`, is a Solidity `mapping` from ticket
+hashes of all ranks to the respective number of rank-combinations ever played in the current round.
+For example, the following 7-ticket:
+
+$$
+{1, 2, 3, 4, 5, 6, 7}
+$$
+
+has:
+
+- $({7 \choose 2} = 21)$ 2-combinations,
+- $({7 \choose 3} = 35)$ 3-combinations,
+- $({7 \choose 4} = 35)$ 4-combinations,
+- $({7 \choose 5} = 21)$ 5-combinations,
+- and $({7 \choose 6} = 7)$ 6-combinations
+
+to count in the `index`.
+
+To implement our `indexTicket` function we will first need a `getPrime(i)` function that returns the
+$i$-th prime. Since we will only ever deal with the first 90 primes the implementation of `getPrime`
+is fairly simple and will not be discussed here.
+
+For reasons that will become clear later, we will also need a Solidity implementation of the
+[binomial coefficient][binomial-coefficient]. It can be implemented efficiently based on its
+well known properties:
+
+$$
+\begin{align}
+{n \choose k} = {n \choose {n - k}}
+\end{align}
+$$
+
+$$
+\begin{align}
+{n \choose k} = \frac{n}{k} \cdot {{n - 1} \choose {k - 1}}
+\end{align}
+$$
+
+In code:
+
+```sol
+function choose(uint n, uint k) private pure returns (uint) {
+  if (k > n) {
+    return 0;  // base case 1
+  } else if (k == 0) {
+    return 1;  // base case 2
+  } else if (k * 2 > n) {
+    return _choose(n, n - k);  // optimize by property (1)
+  } else {
+    return (n * _choose(n - 1, k - 1)) / k;  // recurse by property (2)
+  }
+}
+```
+
+The signature of our `indexTicket` function is:
+
+```sol
+function indexTicket(
+  mapping(uint256 => uint) storage index,
+  uint8[] calldata numbers  // must have at least 6 elements
+) public {
+  // ...
+}
+```
+
+At its core, the indexing algorithm needs to scan all possible 2-combinations, 3-combinations, etc.
+in the ticket. Let us start out with a nested `for` loop structure to scan said combinations:
+
+```sol
+for (uint i0 = 0; i0 < p.length; i0++) {
+  for (uint i1 = i0 + 1; i1 < p.length; i1++) {
+    // 2-combination given by (i0, i1)
+    for (uint i2 = i1 + 1; i2 < p.length; i2++) {
+      // 3-combination given by (i0, i1, i2)
+      for (uint i3 = i2 + 1; i3 < p.length; i3++) {
+        // 4-combination given by (i0, i1, i2, i3)
+        for (uint i4 = i3 + 1; i4 < p.length; i4++) {
+          // 5-combination given by (i0, i1, i2, i3, i4)
+          for (uint i5 = i4 + 1; i5 < p.length; i5++) {
+            // 6-combination given by (i0, i1, i2, i3, i4, i5)
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+The `p` variable referred to by the `p.length` expressions is our array of numbers converted to the
+corresponding primes, which we can initialize as follows:
+
+```sol
+uint256[] memory p = new uint256[](numbers.length);
+for (uint i = 0; i < numbers.length; i++) {
+  uint256 prime = getPrime(numbers[i]);
+  p[i] = prime;
+}
+for (uint i0 = 0; i0 < p.length; i0++) {
+  for (uint i1 = i0 + 1; i1 < p.length; i1++) {
+    // ...
+```
+
+// TODO
+
+## Drawing and Withdrawing Algorithms
+
+Based on what we have discussed so far, the drawing algorithm is made up of three phases:
+
+1. request a random word from the [ChainLink VRF][chainlink-vrf] and consequently determine the 6
+   drawn numbers;
+2. find the number of winning 6-combinations in each category;
+3. checkpoint the revenue and make it available for withdrawal to partners and referrers.
+
+### Determining the 6 Drawn Numbers
+
+The ChainLink VRF can produce one or more 256-bit random words in exchange for a payment in `LINK`
+tokens. The higher the number of returned words, the higher the `LINK` cost of the request. A single
+256-bit word contains more than enough information to draw 6 random numbers. In fact we have:
+
+$$
+90^6 = 531441000000 \ll 2^{256}
+$$
+
+Or, equivalently:
+
+$$
+6 \cdot log_2(90) \approx 38.95 < 256
+$$
+
+We hereby discuss the implementation of a Solidity function that takes a single `uint256` value and
+returns 6 unsigned integers between 1 and 90 inclusive **without repetitions**:
+
+```sol
+function getRandomNumbersWithoutRepetitions(
+  uint256 randomness
+) pure returns (uint8[6] memory numbers) {
+  // ...
+}
+```
+
+Since the drawn numbers must not have repetitions we can choose them by taking an array of the first
+90 integers, production a random permutation based on our 256-bit source of randomness, and
+returning the first 6. We can use the [Fisher-Yates shuffle][fisher-yates-shuffle] for that purpose.
+
+Here is a basic implementation in Solidity:
+
+```sol
+uint8[90] memory source;
+for (uint8 i = 1; i <= 90; i++) {
+  source[i - 1] = i;
+}
+for (uint i = 0; i < source.length; i++) {
+  uint j = i + (randomness % (90 - i));
+  randomness /= 90;
+  uint8 temp = source[i];
+  source[i] = source[j];
+  source[j] = temp;
+}
+for (uint i = 0; i < 6; i++) {
+  numbers[i] = source[i];
+}
+```
+
+Note that `numbers` is the 6-element array returned by our `getRandomNumbersWithoutRepetitions`
+function.
+
+The algorithm written so far has a major flaw: `randomness` doesn't have enough information to
+scramble 90 numbers. We are dividing it by 90 at every step, so we have at most
+
+$$
+\frac{256}{log_2(90)} \approx \frac{256}{6.492} \approx 39
+$$
+
+random indices available, but we're trying to use 90 of them. However that is not a problem because
+the Fisher-Yates algorithm changes the elements of the array in order and never changes an element
+more than once, so we do not need to go through the whole array, we can simply stop at index 5:
+
+```sol
+function getRandomNumbersWithoutRepetitions(
+  uint256 randomness
+) pure returns (uint8[6] memory numbers) {
+uint8[90] memory source;
+  for (uint8 i = 1; i <= 90; i++) {
+    source[i - 1] = i;
+  }
+  for (uint i = 0; i < 6; i++) {
+    uint j = i + (randomness % (90 - i));
+    randomness /= 90;
+    uint8 temp = source[i];
+    source[i] = source[j];
+    source[j] = temp;
+  }
+  for (uint i = 0; i < 6; i++) {
+    numbers[i] = source[i];
+  }
+}
+```
+
+We can further simplify the algorithm by writing our numbers to `numbers` directly rather than
+modifying `source` and then copying the first 6 elements to `numbers`:
+
+```sol
+function getRandomNumbersWithoutRepetitions(
+  uint256 randomness
+) pure returns (uint8[6] memory numbers) {
+uint8[90] memory source;
+  for (uint8 i = 1; i <= 90; i++) {
+    source[i - 1] = i;
+  }
+  for (uint i = 0; i < 6; i++) {
+    uint j = i + (randomness % (90 - i));
+    randomness /= 90;
+    numbers[i] = source[i];
+    source[j] = source[i];
+  }
+}
+```
+
+### Finding the Winners
+
+The goal of this phase of the drawing algorithm is to yield five unsigned integer numbers
+corresponding to th number of winning 6-combinations in each category.
+
+Note that we need to count 6-combinations rather than tickets because, as explained previously, all
+higher-order tickets are treated exactly as if the player bought a set of 6-tickets corresponding to
+all 6-combinations in the higher-order ticket. The price of a ticket is proportional to the number
+of 6-combinations in it, so a fair prize for it must also be proportional to the number of
+6-combinations.
+
+Once we have these five numbers we can store them in a data structure associated to the current
+round of the lottery, and all prize withdrawals will refer to that structure to determine the prize
+amount.
+
+We will now discuss the implementation of a Solidity function called `findWinners` that calculates
+these numbers. The function needs to pieces of input:
+
+// TODO
+
+### Revenue Checkpointing
+
 // TODO
 
 [binomial-coefficient]: https://en.wikipedia.org/wiki/Binomial_coefficient
@@ -533,6 +785,7 @@ slots, so the average ticket prices will be much better.
 [erc20]: https://eips.ethereum.org/EIPS/eip-20
 [erc20-votes]: https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20Votes
 [expectation]: https://en.wikipedia.org/wiki/Expected_value
+[fisher-yates-shuffle]: https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 [hot-lotto]: https://en.wikipedia.org/wiki/Hot_Lotto_fraud_scandal
 [makerdao]: https://makerdao.com
 [openzeppelin]: https://www.openzeppelin.com/
