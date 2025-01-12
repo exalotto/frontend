@@ -1,3 +1,4 @@
+import type { PropsWithChildren } from 'react';
 import type { MDXComponents } from 'mdx/types';
 import Link from 'next/link';
 
@@ -27,5 +28,12 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </table>
     ),
+    td: ({ children }: PropsWithChildren) => {
+      if (typeof children === 'string' && /^\s*\^\^\s*$/.test(children)) {
+        return null;
+      } else {
+        return <td>{children}</td>;
+      }
+    },
   };
 }
