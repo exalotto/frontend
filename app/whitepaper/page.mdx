@@ -341,7 +341,7 @@ inadequately explained shares of the revenue to the various categories.
 
 ## Lottery Algorithm
 
-### Scaling Problem
+### Scaling Challenges
 
 A lottery game is based on the core idea that a large number of players pays a small amount each, so
 we need our implementation to scale to large numbers of tickets, e.g. 1 million per round or even
@@ -474,7 +474,55 @@ $$
 \sum_{i = 2}^{6} {6 \choose i} = 15 + 20 + 15 + 6 + 1 = 57
 $$
 
-`mapping` slots, which is very manageable.
+`mapping` slots, which does not pose any scalability challenge.
+
+That is also the number of `mapping` slots the ticket-buying algorithm will have to _write_ for a
+6-number ticket, which is somewhat more critical. Writing a non-zero value to a storage slot that is
+initially zero costs 20,000 gas units, as implied by the [official specification][storage-gas-costs]
+(we are assuming cold access). Indexing a 6-number ticket whose numbers have never been played
+before in the current round therefore costs $20000 \cdot 57 = 1140000$ gas units. With a pessimistic
+gas cost of 500 Gwei that makes for a **0.57 POL gas fee** (`POL` is the native currency of the
+Polygon PoS blockchain). Assuming 1 POL = 1 USD for simplicity, the 0.57 POL fee adds to a \$1.50
+ticket value for a total of **\$2.07 for a 6-number ticket**, which we deem acceptable.
+
+For higher order tickets the gas fee obviously gets much worse in absolute terms, but it actually
+gets better in relative terms. For example, an 8-ticket will need to write the following amount of
+storage slots:
+
+$$
+\sum_{i = 2}^{6} {8 \choose i} = 28 + 56 + 70 + 56 + 28 = 238
+$$
+
+Assuming cold access for all of them for the worst case we get a gas cost of
+$238 \cdot 20000 = 4760000$ units, or 2.38 POL at a 500 Gwei gas cost. The ticket itself would cost
+\$42.00, so the gas fee is only ~5.67% of the ticket price as opposed to 38% for the 6-ticket. That
+is because the ticket price is proportional to the number of 6-combinations (${n \choose 6}$ for an
+$n$-ticket), while the gas fee is proportional to the number of storage slots
+($\sum_{i = 2}^{6} {n \choose i}$ for an $n$-ticket). When $n$ grows, the latter grows slower than
+the former.
+
+Here is a breakdown of all relative gas costs for the tickets up to 20 numbers:
+
+| ticket rank | # of written slots | gas fee (POL) | ticket price | gas fee (%) |
+| ----------- | ------------------ | ------------- | ------------ | ----------- |
+| 6           | 57                 | 0.57          | \$1.50       | **38.00%**  |
+| 7           | 119                | 1.19          | \$10.50      | **11.33%**  |
+| 8           | 238                | 2.38          | \$42.00      | **5.67%**   |
+| 9           | 456                | 4.56          | \$126.00     | **3.62%**   |
+| 10          | 837                | 8.37          | \$315.00     | **2.66%**   |
+| 11          | 1474               | 14.74         | \$693.00     | **2.13%**   |
+| 12          | 2497               | 24.97         | \$1,386.00   | **1.80%**   |
+| 13          | 4082               | 40.82         | \$2,574.00   | **1.59%**   |
+| 14          | 6461               | 64.61         | \$4,504.50   | **1.43%**   |
+| 15          | 9933               | 99.33         | \$7,507.50   | **1.32%**   |
+| 16          | 14876              | 148.76        | \$12,012.00  | **1.24%**   |
+| 17          | 21760              | 217.60        | \$18,564.00  | **1.17%**   |
+| 18          | 31161              | 311.61        | \$27,846.00  | **1.12%**   |
+| 19          | 43776              | 437.76        | \$40,698.00  | **1.08%**   |
+| 20          | 60439              | 604.39        | \$58,140.00  | **1.04%**   |
+
+Gas fees are usually much lower than 500 Gwei and not all tickets will perform cold access on all
+slots, so the average ticket prices will be much better.
 
 // TODO
 
@@ -492,6 +540,7 @@ $$
 [openzeppelin-timelock-controller]: https://docs.openzeppelin.com/contracts/4.x/api/governance#TimelockController
 [polygon-pos]: https://polygon.technology/polygon-pos
 [serbian-lottery]: https://www.independent.co.uk/news/world/europe/serbian-lottery-probe-after-winning-number-called-before-its-drawn-10430922.html
+[storage-gas-costs]: https://github.com/wolflo/evm-opcodes/blob/main/gas.md#a7-sstore
 
 import { Whitepaper } from '@/components/Article';
 
