@@ -118,7 +118,7 @@ exactly as the set of all possible 6-combinations in it.
 
 The whole game and its DAO are managed on-chain at all times. The ChainLink VRF invocation is the
 only part that runs outside of the EVM, but the ChainLink network is still a decentralized system.
-**We don't use any centralized components**.
+**We do not use any centralized components**.
 
 ## DAO Management
 
@@ -359,7 +359,7 @@ Assuming all tickets have 6 numbers for simplicity, the number of total cases is
 Let's then calculate the number of favorable cases for matching _exactly_ 2 numbers, which is our
 worst case because the 2-match category will often give us the largest amount of processing work.
 The number of ways to match exactly 2 numbers is the number of ways to choose 2 of the drawn numbers
-times the number of ways to choose 4 other numbers among the ones that haven't been drawn:
+times the number of ways to choose 4 other numbers among the ones that were not drawn:
 
 $$
 {6 \choose 2} \cdot {{90 - 6} \choose {6 - 2}}
