@@ -57,7 +57,7 @@ different numbers between 1 and 90 inclusive.
 and all tickets matching two or more of the drawn numbers are awarded a prize. We use the
 [ChainLink VRF][chainlink-vrf] to draw the 6 random numbers securely.
 
-Tickets with more than 6 numbers, which we call _higher order tickets_ throughout this paper, are in
+Tickets with more than 6 numbers, which we call _higher-order tickets_ throughout this paper, are in
 every possible regard treated as if the player bought all possible 6-combinations that can be chosen
 from those numbers. For example, a ticket with 8 numbers is equivalent to ${8 \choose 6} = 28$
 different 6-number tickets, and in general a ticket with $k$ numbers (with $k \ge 6$) is equivalent
@@ -511,7 +511,7 @@ gas cost of 500 Gwei, that makes for a **0.57 POL gas fee** (`POL` is the native
 Polygon PoS blockchain). Assuming 1 POL = 1 USD for simplicity, the 0.57 POL fee adds to a \$1.50
 ticket value for a total of **\$2.07 for a 6-number ticket**, which we deem acceptable.
 
-For higher order tickets the gas fee obviously gets much worse in absolute terms, but it actually
+For higher-order tickets the gas fee obviously gets much worse in absolute terms, but it actually
 gets better in relative terms. For example, an 8-ticket will need to write the following amount of
 storage slots:
 
@@ -786,36 +786,26 @@ Based on what we have discussed so far, the drawing algorithm is made up of thre
 2. find the number of winning 6-combinations in each category;
 3. checkpoint the revenue and make it available for withdrawal to partners and referrers.
 
-### Determining the 6 Drawn Numbers
+### Determining the 6 Random Numbers
 
 The ChainLink VRF can produce one or more 256-bit random words in exchange for a payment in `LINK`
-tokens. The higher the number of returned words, the higher the `LINK` cost of the request. A single
-256-bit word contains more than enough information to draw 6 random numbers. In fact we have:
+tokens. The lottery smartcontract requests 6 words to ChainLink and then uses them to determine 6
+random numbers between 1 and 90 inclusive without repetitions.
 
-$$
-90^6 = 531441000000 \ll 2^{256}
-$$
-
-Or, equivalently:
-
-$$
-6 \cdot log_2(90) \approx 38.95 < 256
-$$
-
-We hereby discuss the implementation of a Solidity function that takes a single `uint256` value and
-returns 6 unsigned integers between 1 and 90 inclusive **without repetitions**:
+We hereby discuss the implementation of a Solidity function that takes the random words returned by
+the VRF and returns the 6 random numbers:
 
 ```sol
 function getRandomNumbersWithoutRepetitions(
-  uint256 randomness
+  uint256[] calldata randomWords
 ) pure returns (uint8[6] memory numbers) {
   // ...
 }
 ```
 
 Since the drawn numbers must not have repetitions we can choose them by taking an array of the first
-90 integers, production a random permutation based on our 256-bit source of randomness, and
-returning the first 6. We can use the [Fisher-Yates shuffle][fisher-yates-shuffle] for that purpose.
+90 integers, production a random permutation based on the input words, and returning the first 6. We
+can use the [Fisher-Yates shuffle][fisher-yates-shuffle] for that purpose.
 
 Here is a basic implementation in Solidity:
 
@@ -825,8 +815,7 @@ for (uint8 i = 1; i <= 90; i++) {
   source[i - 1] = i;
 }
 for (uint i = 0; i < source.length; i++) {
-  uint j = i + (randomness % (90 - i));
-  randomness /= 90;
+  uint j = i + (randomWords[i] % (90 - i));
   uint8 temp = source[i];
   source[i] = source[j];
   source[j] = temp;
@@ -839,28 +828,30 @@ for (uint i = 0; i < 6; i++) {
 Note that `numbers` is the 6-element array returned by our `getRandomNumbersWithoutRepetitions`
 function.
 
-The algorithm written so far has a major flaw: `randomness` doesn't have enough information to
-scramble 90 numbers. We are dividing it by 90 at every step, so we have at most
+The algorithm written so far requires 90 elements in `randomWords`. We cannot use the same one
+through the whole algorithm because a 256-bit word does not have enough information to scramble 90
+elements. A single word can give us at most
 
 $$
 \frac{256}{log_2(90)} \approx \frac{256}{6.492} \approx 39
 $$
 
-random indices available, but we're trying to use 90 of them. However that is not a problem because
-the Fisher-Yates algorithm changes the elements of the array in order and never changes an element
-more than once, so we do not need to go through the whole array, we can simply stop at index 5:
+random indices.
+
+However we can reduce our usage to just 6 words. The Fisher-Yates algorithm changes the elements of
+the array in order and never changes an element more than once, so we do not need to go through the
+whole array, we can simply stop at index 5:
 
 ```sol
 function getRandomNumbersWithoutRepetitions(
-  uint256 randomness
+  uint256[] calldata randomWords  // assume 6 elements
 ) pure returns (uint8[6] memory numbers) {
-uint8[90] memory source;
+  uint8[90] memory source;
   for (uint8 i = 1; i <= 90; i++) {
     source[i - 1] = i;
   }
   for (uint i = 0; i < 6; i++) {
-    uint j = i + (randomness % (90 - i));
-    randomness /= 90;
+    uint j = i + (randomWords[i] % (90 - i));
     uint8 temp = source[i];
     source[i] = source[j];
     source[j] = temp;
@@ -871,25 +862,48 @@ uint8[90] memory source;
 }
 ```
 
-We can further simplify the algorithm by writing our numbers to `numbers` directly rather than
-modifying `source` and then copying the first 6 elements to `numbers`:
+We can further simplify the algorithm by writing our numbers directly to `numbers` rather than
+modifying `source` and copying the first 6 elements:
 
 ```sol
 function getRandomNumbersWithoutRepetitions(
-  uint256 randomness
+  uint256[] calldata randomWords  // assume 6 elements
 ) pure returns (uint8[6] memory numbers) {
-uint8[90] memory source;
+  uint8[90] memory source;
   for (uint8 i = 1; i <= 90; i++) {
     source[i - 1] = i;
   }
   for (uint i = 0; i < 6; i++) {
-    uint j = i + (randomness % (90 - i));
-    randomness /= 90;
+    uint j = i + (randomWords[i] % (90 - i));
     numbers[i] = source[i];
     source[j] = source[i];
   }
 }
 ```
+
+Note: in theory a single 256-bit word has enough information to infer all 6 indices we use in this
+last version. In fact we have:
+
+$$
+90^6 = 531441000000 \ll 2^{256}
+$$
+
+Or, equivalently:
+
+$$
+6 \cdot log_2(90) \approx 38.95 < 256
+$$
+
+But in practice it is very hard to do so while not affecting bias. Some bias will always be present
+since 90 does not divide $2^{256}$, but it is virtually non-existent because $2^{256}$ is many
+orders of magnitude larger than $2^{256} \mod 90$, or 16 (see [Modular
+exponentiation][modular-exponentiation] for information on how to calculate it). The bias we have
+means the first 16 elements of our [1, 90] range have one out of $2^{256}$ extra chances of being
+extracted compared to the other 74. If we extracted all 6 indices from the same 256-bit word we
+would be consuming ~33 bits for the first 5 indices and be left with 223 for the last. We have
+$2^{223} \mod 90 = 38$, so the first 38 elements of the [1, 90] range would now have one out of
+$2^{223}$ extra chances of being extracted. It is still virtually non-existent, but we would rather
+not have this inconsistency.
 
 ### Finding the Winners
 
@@ -924,6 +938,7 @@ these numbers. The function needs two pieces of input:
 [fisher-yates-shuffle]: https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 [hot-lotto]: https://en.wikipedia.org/wiki/Hot_Lotto_fraud_scandal
 [makerdao]: https://makerdao.com
+[modular-exponentiation]: https://en.wikipedia.org/wiki/Modular_exponentiation
 [openzeppelin]: https://www.openzeppelin.com/
 [openzeppelin-governor]: https://docs.openzeppelin.com/contracts/4.x/api/governance#Governor
 [openzeppelin-timelock-controller]: https://docs.openzeppelin.com/contracts/4.x/api/governance#TimelockController
