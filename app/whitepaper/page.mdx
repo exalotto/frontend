@@ -326,10 +326,10 @@ So we have two conflicting criteria that balance each other out, as we show form
 following.
 
 For a given category $k$ we can call the probability of winning in that category $p_k$, and the
-expected number of winners $\xi_k$. We can use $n$ to indicate the total number of played
-6-combinations in a round. $\xi_k$ is a [binomial variable][binomial-variable] with expected value
-$np_k$. Based on the two proportionality criteria above, the share of the revenue allocated to the
-prize for category $k$ can be measured as:
+expected number of winners $\xi_k$. We can use $n$ to indicate the total number of 6-combinations
+played in a round. $\xi_k$ is a [binomial variable][binomial-variable] with expected value $np_k$.
+Based on the two proportionality criteria above, the share of the revenue allocated to the prize for
+category $k$ can be measured as:
 
 $$
 S_k = \frac{E(\xi_k)}{p_k} = \frac{np_k}{p_k} = n
@@ -351,11 +351,12 @@ $p_k$ the probability of matching exactly $k$ numbers. Since $p_k$ is highest fo
 $k$ (matching 2 numbers is easier than matching 6), our worst case (highest number of tickets in a
 winning category) is $k = 2$.
 
-The probability of an event is calculated by dividing the number of favorable cases by the number of total cases.
+The probability of an event is calculated by dividing the number of favorable cases by the number of
+total cases. Assuming all tickets have 6 numbers for simplicity, the number of total cases is
+$90 \choose 6$. Let's then calculate the number of favorable cases for matching _exactly_ 2 numbers,
+which is our worst case because the 2-match category will often give us the largest amount of
+processing work.
 
-Assuming all tickets have 6 numbers for simplicity, the number of total cases is $90 \choose 6$.
-Let's then calculate the number of favorable cases for matching _exactly_ 2 numbers, which is our
-worst case because the 2-match category will often give us the largest amount of processing work.
 The number of ways to match exactly 2 numbers is the number of ways to choose 2 of the drawn numbers
 times the number of ways to choose 4 other numbers among the ones that were not drawn:
 
@@ -411,7 +412,7 @@ analyze the resulting gas costs.
 
 ## Indexing Algorithm
 
-Let us define a bijection from the first 90 positive naturals 1, 2, 3, ... to the first 90 primes 2,
+Let's define a bijection from the first 90 positive naturals 1, 2, 3, ... to the first 90 primes 2,
 3, 5, ...
 
 We have:
@@ -432,7 +433,7 @@ $$
 
 The first 90 positive naturals correspond to the numbers that can be played and drawn in ExaLotto.
 
-Let us call the above table $P$ so that $P_i$ is the $i$-th prime.
+Let's call the above table $P$ so that $P_i$ is the $i$-th prime.
 
 A ticket with 6 numbers $a_1$, $a_2$, $a_3$, $a_4$, $a_5$, $a_6$, **independently of their order**,
 can be identified by the following product:
@@ -441,9 +442,9 @@ $$
 H = P_{a_1} \cdot P_{a_2} \cdot P_{a_3} \cdot P_{a_4} \cdot P_{a_5} \cdot P_{a_6}
 $$
 
-Storing these numbers is not a problem thanks to the 256-bit integers used by Solidity. For a
-20-number ticket, which has a hefty base cost of \$58,140 as per the [price table
-above](#game-description), we have:
+Storing $H$ is not a problem thanks to the 256-bit integers used by Solidity. For a 20-number
+ticket, which has a hefty base cost of \$58,140 as per the [price table above](#game-description),
+we have:
 
 $$
 20 \cdot log_2(463) \approx 177.097
@@ -472,7 +473,26 @@ independently of their order.
 Our hash system provides an easy way to find $H_6$ in O(1), but of course we need to repeat the
 process for all other winning categories. It will get more expensive for other categories because
 there will be many ways to choose 2 numbers out of the 6 drawn ones, many ways to choose 3 numbers,
-etc. (We can rank our hashes and call $H_6$ the _6-hash_, $H_5$ the _5-hashes_, etc.)
+etc.
+
+In the following we will rank our ticket hashes based on the cardinality of a subset of numbers. For
+example, the 6-ticket
+
+$$
+\{1, 2, 3, 4, 5, 6\}
+$$
+
+has:
+
+- 15 2-hashes ($(P_1 \cdot P_2)$, $(P_1 \cdot P_3)$, etc.),
+- 20 3-hashes ($(P_1 \cdot P_2 \cdot P_3)$, $(P_1 \cdot P_2 \cdot P_4)$, etc.),
+- 15 4-hashes ($(P_1 \cdot P_2 \cdot P_3 \cdot P_4)$, $(P_1 \cdot P_2 \cdot P_3 \cdot P_5)$, etc.),
+
+and so on.
+
+We will use the same `mapping` to index hashes of all ranks, and that is not a problem because
+hashes of different ranks cannot collide thanks to the fact that they are products of prime numbers.
+If two hashes collide it means they represent the same unordered set of numbers.
 
 In total, the drawing algorithm will need to look up:
 
@@ -487,7 +507,7 @@ That is also the number of `mapping` slots the ticket-buying algorithm will have
 initially zero costs 20,000 gas units, as implied by the [official specification][storage-gas-costs]
 (we are assuming cold access). Indexing a 6-number ticket whose numbers have never been played
 before in the current round therefore costs $20000 \cdot 57 = 1140000$ gas units. With a pessimistic
-gas cost of 500 Gwei that makes for a **0.57 POL gas fee** (`POL` is the native currency of the
+gas cost of 500 Gwei, that makes for a **0.57 POL gas fee** (`POL` is the native currency of the
 Polygon PoS blockchain). Assuming 1 POL = 1 USD for simplicity, the 0.57 POL fee adds to a \$1.50
 ticket value for a total of **\$2.07 for a 6-number ticket**, which we deem acceptable.
 
@@ -530,33 +550,102 @@ Here is a breakdown of all relative gas costs for the tickets up to 20 numbers:
 Gas fees are usually much lower than 500 Gwei and not all tickets will perform cold access on all
 slots, so the average ticket prices will be much better.
 
-Based on everything discussed so far we can write a Solidity function called `indexTicket` that
-takes $k$ numbers between 1 and 90 inclusive (the numbers chosen by the player when buying the
+The goal of the rest of this section is to write a Solidity function called `indexTicket` that takes
+6 or more numbers between 1 and 90 inclusive (the numbers chosen by the player when buying the
 ticket) and indexes all possible 2-combinations, 3-combinations, 4-combinations, 5-combinations, and
 6-combinations of those numbers in a data structure for later retrieval by the
 [drawing algorithm](#finding-the-winners).
 
 The indexing data structure, which we will call just `index`, is a Solidity `mapping` from ticket
-hashes of all ranks to the respective number of rank-combinations ever played in the current round.
-For example, the following 7-ticket:
+hashes of all ranks to the number of 6-combinations matching each rank-hash. Ticket indices are
+round-specific, meaning that an `index` instance will only count the 6-combinations of a single
+round.
 
-$$
-{1, 2, 3, 4, 5, 6, 7}
-$$
+Indexing 6-tickets is easy: since they have only one 6-combination we just need to increment the
+number of 6-combinations associated to each rank-hash of the ticket. A version of `indexTicket` that
+is for 6-tickets only could be written as follows:
 
-has:
+```sol
+function indexTicket6(
+  mapping(uint256 => uint) storage index,
+  uint8[6] calldata numbers
+) public {
+  uint256 p0 = getPrime(numbers[0]);
+  uint256 p1 = getPrime(numbers[1]);
+  uint256 p2 = getPrime(numbers[2]);
+  uint256 p3 = getPrime(numbers[3]);
+  uint256 p4 = getPrime(numbers[4]);
+  uint256 p5 = getPrime(numbers[5]);
+  index[p0 * p1]++;
+  index[p0 * p2]++;
+  index[p0 * p3]++;
+  index[p0 * p4]++;
+  index[p0 * p5]++;
+  index[p1 * p2]++;
+  index[p1 * p3]++;
+  index[p1 * p4]++;
+  index[p1 * p5]++;
+  index[p2 * p3]++;
+  index[p2 * p4]++;
+  index[p2 * p5]++;
+  index[p3 * p4]++;
+  index[p3 * p5]++;
+  index[p4 * p5]++;
+  index[p0 * p1 * p2]++;
+  index[p0 * p1 * p3]++;
+  index[p0 * p1 * p4]++;
+  index[p0 * p1 * p5]++;
+  index[p0 * p2 * p3]++;
+  index[p0 * p2 * p4]++;
+  index[p0 * p2 * p5]++;
+  index[p0 * p3 * p4]++;
+  index[p0 * p3 * p5]++;
+  index[p0 * p4 * p5]++;
+  index[p1 * p2 * p3]++;
+  index[p1 * p2 * p4]++;
+  index[p1 * p2 * p5]++;
+  index[p1 * p3 * p4]++;
+  index[p1 * p3 * p5]++;
+  index[p1 * p4 * p5]++;
+  index[p2 * p3 * p4]++;
+  index[p2 * p3 * p5]++;
+  index[p2 * p4 * p5]++;
+  index[p3 * p4 * p5]++;
+  index[p0 * p1 * p2 * p3]++;
+  index[p0 * p1 * p2 * p4]++;
+  index[p0 * p1 * p2 * p5]++;
+  index[p0 * p1 * p3 * p4]++;
+  index[p0 * p1 * p3 * p5]++;
+  index[p0 * p1 * p4 * p5]++;
+  index[p0 * p2 * p3 * p4]++;
+  index[p0 * p2 * p3 * p5]++;
+  index[p0 * p2 * p4 * p5]++;
+  index[p0 * p3 * p4 * p5]++;
+  index[p1 * p2 * p3 * p4]++;
+  index[p1 * p2 * p3 * p5]++;
+  index[p1 * p2 * p4 * p5]++;
+  index[p1 * p3 * p4 * p5]++;
+  index[p2 * p3 * p4 * p5]++;
+  index[p0 * p1 * p2 * p3 * p4]++;
+  index[p0 * p1 * p2 * p3 * p5]++;
+  index[p0 * p1 * p2 * p4 * p5]++;
+  index[p0 * p1 * p3 * p4 * p5]++;
+  index[p0 * p2 * p3 * p4 * p5]++;
+  index[p1 * p2 * p3 * p4 * p5]++;
+  index[p0 * p1 * p2 * p3 * p4 * p5]++;
+}
+```
 
-- $({7 \choose 2} = 21)$ 2-combinations,
-- $({7 \choose 3} = 35)$ 3-combinations,
-- $({7 \choose 4} = 35)$ 4-combinations,
-- $({7 \choose 5} = 21)$ 5-combinations,
-- and $({7 \choose 6} = 7)$ 6-combinations
+where `getPrime(i)` returns the $i$-th prime as per the bijection above. The implementation of
+`getPrime` itself is fairly straightforward because we will only ever deal with the first 90 primes,
+so we will not discuss it here.
 
-to count in the `index`.
+Higher-order tickets make things more complicated because each rank-hash may be covered by more than
+one 6-combination. For example, a 7-ticket has exactly 5 6-combinations for every 2-hash because
+given the 2 numbers corresponding to the 2-hash they can be counted as the number of ways to choose
+the remaining 4 numbers (${{7 - 2} \choose {6 - 2}} = {5 \choose 4} = 5$).
 
-To implement our `indexTicket` function we will first need a `getPrime(i)` function that returns the
-$i$-th prime. Since we will only ever deal with the first 90 primes the implementation of `getPrime`
-is fairly simple and will not be discussed here.
+// TODO
 
 For reasons that will become clear later, we will also need a Solidity implementation of the
 [binomial coefficient][binomial-coefficient]. It can be implemented efficiently based on its
@@ -601,8 +690,8 @@ function indexTicket(
 }
 ```
 
-At its core, the indexing algorithm needs to scan all possible 2-combinations, 3-combinations, etc.
-in the ticket. Let us start out with a nested `for` loop structure to scan said combinations:
+At its core the indexing algorithm needs to scan all possible 2-combinations, 3-combinations, etc.
+in the ticket. Let's start out with a nested `for` loop structure to scan all combinations:
 
 ```sol
 for (uint i0 = 0; i0 < p.length; i0++) {
@@ -630,15 +719,63 @@ corresponding primes, which we can initialize as follows:
 ```sol
 uint256[] memory p = new uint256[](numbers.length);
 for (uint i = 0; i < numbers.length; i++) {
-  uint256 prime = getPrime(numbers[i]);
-  p[i] = prime;
+  p[i] = getPrime(numbers[i]);
 }
 for (uint i0 = 0; i0 < p.length; i0++) {
   for (uint i1 = i0 + 1; i1 < p.length; i1++) {
     // ...
 ```
 
-// TODO
+Each slot of the `index`, corresponding to a $k$-hash of rank $k$, needs to be incremented by the
+number of 6-combinations containing the $k$ numbers of the hash. The increment is therefore the
+number of ways to choose the other $6 - k$ numbers, or ${n - k} \choose {6 - k}$ where $n$ is
+`numbers.length` (same as `p.length`). Since $n$ is fixed we can calculate this binomial coefficient
+at the start for all $k$s:
+
+```sol
+uint combinations2 = choose(numbers.length - 2, 4);
+uint combinations3 = choose(numbers.length - 3, 3);
+uint combinations4 = choose(numbers.length - 4, 2);
+uint combinations5 = numbers.length - 5;  // choose(numbers.length - 5, 1)
+```
+
+We do not need `combinations6` because the number of 6-combinations corresponding to a given 6-hash
+is obviously 1.
+
+The updated algorithm is:
+
+```sol
+function indexTicket(
+  mapping(uint256 => uint) storage index,
+  uint8[] calldata numbers
+) public {
+  uint combinations2 = choose(numbers.length - 2, 4);
+  uint combinations3 = choose(numbers.length - 3, 3);
+  uint combinations4 = choose(numbers.length - 4, 2);
+  uint combinations5 = numbers.length - 5;
+  uint256[] memory p = new uint256[](numbers.length);
+  for (uint i = 0; i < numbers.length; i++) {
+    p[i] = getPrime(numbers[i]);
+  }
+  for (uint i0 = 0; i0 < p.length; i0++) {
+    for (uint i1 = i0 + 1; i1 < p.length; i1++) {
+      index[p[i0] * p[i1]] += combinations2;
+      for (uint i2 = i1 + 1; i2 < p.length; i2++) {
+        index[p[i0] * p[i1] * p[i2]] += combinations3;
+        for (uint i3 = i2 + 1; i3 < p.length; i3++) {
+          index[p[i0] * p[i1] * p[i2] * p[i3]] += combinations4;
+          for (uint i4 = i3 + 1; i4 < p.length; i4++) {
+            index[p[i0] * p[i1] * p[i2] * p[i3] * p[i4]] += combinations5;
+            for (uint i5 = i4 + 1; i5 < p.length; i5++) {
+              index[p[i0] * p[i1] * p[i2] * p[i3] * p[i4] * p[i5]]++;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
 
 ## Drawing and Withdrawing Algorithms
 
@@ -762,15 +899,14 @@ corresponding to th number of winning 6-combinations in each category.
 Note that we need to count 6-combinations rather than tickets because, as explained previously, all
 higher-order tickets are treated exactly as if the player bought a set of 6-tickets corresponding to
 all 6-combinations in the higher-order ticket. The price of a ticket is proportional to the number
-of 6-combinations in it, so a fair prize for it must also be proportional to the number of
-6-combinations.
+of 6-combinations in it, so a fair prize must also be proportional to the number of 6-combinations.
 
 Once we have these five numbers we can store them in a data structure associated to the current
 round of the lottery, and all prize withdrawals will refer to that structure to determine the prize
 amount.
 
 We will now discuss the implementation of a Solidity function called `findWinners` that calculates
-these numbers. The function needs to pieces of input:
+these numbers. The function needs two pieces of input:
 
 // TODO
 
