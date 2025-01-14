@@ -1,6 +1,7 @@
 import Image from 'next/image';
 
 import prize_allocation_chart from '@/images/prize_allocation_chart.png';
+import venn_diagram from '@/images/venn_diagram.png';
 
 export const meta = {
   title: 'ExaLotto Whitepaper',
@@ -309,8 +310,6 @@ $$
 
 so that the second coefficient becomes 0 for every $i < 4$.
 
-// TODO
-
 As explained earlier, we allocate the same fraction of the revenue for all 5 winning categories,
 $80\% \cdot 18.8\%$. We found this to be the fairest possible allocation. In fact, in order to award
 the fairest possible prizes, the share of a given category must be inversely proportional to the
@@ -325,7 +324,7 @@ In other words:
 So we have two conflicting criteria that balance each other out, as we show formally in the
 following.
 
-For a given category $k$ we can call the probability of winning in that category $p_k$, and the
+For a given category $k$ we can call the probability of winning in that category $p_k$ and the
 expected number of winners $\xi_k$. We can use $n$ to indicate the total number of 6-combinations
 played in a round. $\xi_k$ is a [binomial variable][binomial-variable] with expected value $np_k$.
 Based on the two proportionality criteria above, the share of the revenue allocated to the prize for
@@ -345,10 +344,9 @@ A lottery game is based on the core idea that a large number of players pays a s
 we need our implementation to scale to large numbers of tickets, e.g. 1 million per round or even
 more.
 
-The number of tickets matching $k$ of the drawn numbers is a [binomial variable][binomial-variable]
-with [expected value][expectation] $np_k$, with $n$ being the number of tickets sold in a round and
-$p_k$ the probability of matching exactly $k$ numbers. Since $p_k$ is highest for _low_ values of
-$k$ (matching 2 numbers is easier than matching 6), our worst case (highest number of tickets in a
+Once again let's consider the number of expected winners for a category $k$. $p_k$ is the
+probability of matching exactly $k$ numbers. Since $p_k$ is highest for _low_ values of $k$
+(matching 2 numbers is easier than matching 6), our worst case (highest number of tickets in a
 winning category) is $k = 2$.
 
 The probability of an event is calculated by dividing the number of favorable cases by the number of
@@ -374,7 +372,7 @@ p_2 = \frac{
 } = \frac{15 \cdot 1929501}{622614630} \approx 0.04648543995
 $$
 
-With
+Now, with
 
 $$
 n = 1000000
@@ -908,7 +906,7 @@ not have this inconsistency.
 ### Finding the Winners
 
 The goal of this phase of the drawing algorithm is to yield five unsigned integer numbers
-corresponding to th number of winning 6-combinations in each category.
+corresponding to the number of winning 6-combinations in each category.
 
 Note that we need to count 6-combinations rather than tickets because, as explained previously, all
 higher-order tickets are treated exactly as if the player bought a set of 6-tickets corresponding to
@@ -920,7 +918,107 @@ round of the lottery, and all prize withdrawals will refer to that structure to 
 amount.
 
 We will now discuss the implementation of a Solidity function called `findWinners` that calculates
-these numbers. The function needs two pieces of input:
+these numbers. The function needs two pieces of input: the `index` data structure described in the
+[Indexing Algorithm](#indexing-algorithm) section and the 6 drawn numbers. It will return 5 unsigned
+integers representing the number of winning 6-combinations in each category.
+
+```sol
+function findWinners(
+  mapping(uint256 => uint) storage index,
+  uint8[6] memory numbers
+) public view returns (uint[5] memory winners) {
+  winners = [
+    uint(0), // tickets matching exactly 2 numbers
+    uint(0), // tickets matching exactly 3 numbers
+    uint(0), // tickets matching exactly 4 numbers
+    uint(0), // tickets matching exactly 5 numbers
+    uint(0) // tickets matching all 6 numbers
+  ];
+  // ...
+}
+```
+
+First off, in order to work on the `index` we need to initialize the 6 prime numbers corresponding
+to the drawn numbers as usual:
+
+```sol
+uint256[6] memory p = [
+  uint256(getPrime(numbers[0])),
+  uint256(getPrime(numbers[1])),
+  uint256(getPrime(numbers[2])),
+  uint256(getPrime(numbers[3])),
+  uint256(getPrime(numbers[4])),
+  uint256(getPrime(numbers[5]))
+];
+```
+
+Similarly to the [ticket indexing algorithm](#indexing-algorithm), the `findWinners` algorithm will
+also use a nested `for` loop structure that scans all possible 2-, 3-, 4-, 5-, and 6-combinations of
+the drawn numbers, the only difference being that this time we are scanning exactly 6 elements and
+will therefore find exactly 57 combinations, of which only one 6-combination.
+
+```sol
+for (uint i0 = 0; i0 < 6; i0++) {
+  for (uint i1 = i0 + 1; i1 < 6; i1++) {
+    // 2-combination given by (i0, i1)
+    for (uint i2 = i1 + 1; i2 < 6; i2++) {
+      // 3-combination given by (i0, i1, i2)
+      for (uint i3 = i2 + 1; i3 < 6; i3++) {
+        // 4-combination given by (i0, i1, i2, i3)
+        for (uint i4 = i3 + 1; i4 < 6; i4++) {
+          // 5-combination given by (i0, i1, i2, i3, i4)
+          for (uint i5 = i4 + 1; i5 < 6; i5++) {
+            // 6-combination given by (i0, i1, i2, i3, i4, i5)
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+We can now access the `index` and copy the relevant values in the `winners` array accordingly:
+
+```sol
+for (uint i0 = 0; i0 < 6; i0++) {
+  for (uint i1 = i0 + 1; i1 < 6; i1++) {
+    winners[0] += index[p[i0] * p[i1]];
+    for (uint i2 = i1 + 1; i2 < 6; i2++) {
+      winners[1] += index[p[i0] * p[i1] * p[i2]];
+      for (uint i3 = i2 + 1; i3 < 6; i3++) {
+        winners[2] += index[p[i0] * p[i1] * p[i2] * p[i3]];
+        for (uint i4 = i3 + 1; i4 < 6; i4++) {
+          winners[3] += index[p[i0] * p[i1] * p[i2] * p[i3] * p[i4]];
+          for (uint i5 = i4 + 1; i5 < 6; i5++) {
+            winners[4] += index[p[i0] * p[i1] * p[i2] * p[i3] * p[i4] * p[i5]];
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+The algorithm written so far has a double-counting problem. The counts associated to the ticket
+hashes of each rank are simply being added up, but the sets they represent are not disjoint.
+Representing all the involved sets is too complicated but the following branch of the Venn diagram
+is sufficient to understand the problem:
+
+<Image src={venn_diagram} alt="Venn diagram" />
+
+The diagram assumes that the drawn numbers are 1, 2, 3, 4, and two more. The area labeled with `12`
+is the set of all 6-combinations containing 1 and 2, the area labeled with `123` is the set of all
+6-combinations containing 1, 2, and 3, and so on.
+
+Our `index` can quickly give us the cardinality of `1234`, but when asked for the cardinality of
+`12` for instance, it will also include the cardinalities of `123`, `124`, and `1234` in the count.
+We need to exclude those areas from the count of the tickets matching _only_ 1 and 2, otherwise we
+will violate one of the main properties of ExaLotto because `winners[0]` will also count the tickets
+matching `123`, `124`, etc. (tickets with 3 or more matches will be attributed a prize in the
+2-match category).
+
+The above Venn diagram shows that 2-match areas are being counted once, 3-match areas are being
+counted twice, and 4-match areas are being counted three times.
 
 // TODO
 
