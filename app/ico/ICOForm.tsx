@@ -10,7 +10,7 @@ import { useWeb3React } from '@web3-react/core';
 import { ModalContext } from '@/components/Modals';
 import { divideBigInts, formatBigNumber, useAsyncEffect } from '@/components/Utilities';
 
-import ICO from '@/components/ICO.json';
+import TokenSale from '@/components/TokenSale.json';
 
 // 1 EXL in wei, i.e. 1e18.
 const DECIMALS = 1000000000000000000n;
@@ -18,7 +18,7 @@ const DECIMALS = 1000000000000000000n;
 // Total EXL supply in EXL-wei (1e27).
 const TOTAL_SUPPLY = 1000000000000000000000000000n;
 
-const FormContent = ({ ico }: { ico: Contract<typeof ICO.abi> }) => {
+const FormContent = ({ ico }: { ico: Contract<typeof TokenSale.abi> }) => {
   const { library, account } = useWeb3React<Web3>();
   const web3 = library!;
   const fromWei = (value: bigint) => web3.utils.fromWei(value, 'ether');
@@ -210,7 +210,7 @@ export const ICOForm = () => {
   const [ico, setICO] = useState(null);
   useEffect(() => {
     if (context.active && context.library) {
-      setICO(new context.library.eth.Contract(ICO.abi, process.env.NEXT_PUBLIC_ICO_ADDRESS));
+      setICO(new context.library.eth.Contract(TokenSale.abi, process.env.NEXT_PUBLIC_ICO_ADDRESS));
     } else {
       setICO(null);
     }

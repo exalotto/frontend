@@ -441,7 +441,7 @@ H = P_{a_1} \cdot P_{a_2} \cdot P_{a_3} \cdot P_{a_4} \cdot P_{a_5} \cdot P_{a_6
 $$
 
 Storing $H$ is not a problem thanks to the 256-bit integers used by Solidity. For a 20-number
-ticket, which has a hefty base cost of \$58,140 as per the [price table above](#game-description),
+ticket, which has a hefty base price of \$58,140 as per the [price table above](#game-description),
 we have:
 
 $$
@@ -550,8 +550,8 @@ slots, so the average ticket prices will be much better.
 
 The goal of the rest of this section is to write a Solidity function called `indexTicket` that takes
 6 or more numbers between 1 and 90 inclusive (the numbers chosen by the player when buying the
-ticket) and indexes all possible 2-combinations, 3-combinations, 4-combinations, 5-combinations, and
-6-combinations of those numbers in a data structure for later retrieval by the
+ticket) and indexes all of their possible 2-combinations, 3-combinations, 4-combinations,
+5-combinations, and 6-combinations in a data structure for later retrieval by the
 [drawing algorithm](#finding-the-winners).
 
 The indexing data structure, which we will call just `index`, is a Solidity `mapping` from ticket
@@ -560,8 +560,8 @@ round-specific, meaning that an `index` instance will only count the 6-combinati
 round.
 
 Indexing 6-tickets is easy: since they have only one 6-combination we just need to increment the
-number of 6-combinations associated to each rank-hash of the ticket. A version of `indexTicket` that
-is for 6-tickets only could be written as follows:
+number of 6-combinations associated to each rank-hash of the ticket by 1. A version of `indexTicket`
+that is for 6-tickets only could be written as follows:
 
 ```sol
 function indexTicket6(
@@ -641,13 +641,9 @@ so we will not discuss it here.
 Higher-order tickets make things more complicated because each rank-hash may be covered by more than
 one 6-combination. For example, a 7-ticket has exactly 5 6-combinations for every 2-hash because
 given the 2 numbers corresponding to the 2-hash they can be counted as the number of ways to choose
-the remaining 4 numbers (${{7 - 2} \choose {6 - 2}} = {5 \choose 4} = 5$).
-
-// TODO
-
-For reasons that will become clear later, we will also need a Solidity implementation of the
-[binomial coefficient][binomial-coefficient]. It can be implemented efficiently based on its
-well known properties:
+the remaining 4 numbers (${{7 - 2} \choose {6 - 2}} = {5 \choose 4} = 5$). Because of that, in order
+to write the full indexing algorithm we will need a Solidity implementation of the [binomial
+coefficient][binomial-coefficient]. We can create an efficient one using the well known properties:
 
 $$
 \begin{align}
@@ -1014,11 +1010,11 @@ Since the sets are not disjoint, the cardinality of the areas labeled `123`, `12
 `1234` have been counted several times. This would violate property \#1 of ExaLotto (6-combinations
 winning in category $k$ must not also be awarded a prize for matching $k - 1$ numbers in several
 ways, $k - 2$ numbers in several ways, etc.) because the winners from a category $k$ are also being
-counted in all lower categories.
+counted in all categories beneath.
 
 The above Venn diagram shows us that we need to remove the number of winners of category $k_i$ from
-all lower categories $k_j$ (with $2 \le j < i$) as many times as there are ways to choose $j$
-elements out of $i$, or $i \choose j$, because that is how we can count all possible
+all categories $k_j$ (for all $j$ such that $2 \le j < i$) as many times as there are ways to choose
+$j$ elements out of $i$, or $i \choose j$, because that is how we can count all possible
 $i$-intersections that are being extra-counted in the $j$ category. For example, the area `123` is
 being counted in the 2-match category once for every contributing 2-match set, that is: `12`, `13`,
 and `23`. Those sets can be found by choosing 2 elements out of 3.

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import type { ControllerContract, GovernanceTokenContract } from '@/components/Lottery';
 import { useLottery, type Web3Context } from '@/components/LotteryContext';
@@ -18,21 +18,19 @@ const DynamicStatus = ({
   const [show, setShow] = useState(false);
   const [balance, setBalance] = useState<bigint | null>(null);
   const [unclaimed, setUnclaimed] = useState<bigint | null>(null);
-  useEffect(() => {
-    (async () => {
-      setBalance(null);
-      setUnclaimed(null);
-      const balance = web3!.utils.toBigInt(await token.methods.balanceOf(account).call());
-      if (balance != 0n) {
-        setShow(false);
-        return;
-      }
-      setBalance(balance);
-      setShow(true);
-      setUnclaimed(
-        web3!.utils.toBigInt(await controller.methods.getUnclaimedRevenue(account).call()),
-      );
-    })();
+  useAsyncEffect(async () => {
+    setBalance(null);
+    setUnclaimed(null);
+    const balance = web3!.utils.toBigInt(await token.methods.balanceOf(account).call());
+    if (!balance) {
+      setShow(false);
+      return;
+    }
+    setBalance(balance);
+    setShow(true);
+    setUnclaimed(
+      web3!.utils.toBigInt(await controller.methods.getUnclaimedRevenue(account).call()),
+    );
   }, [account, controller, token, web3]);
   if (!show) {
     return null;
@@ -77,9 +75,12 @@ export const PartnerStatus = () => {
   const [token, setToken] = useState<GovernanceTokenContract | null>(null);
   const [controller, setController] = useState<ControllerContract | null>(null);
   useAsyncEffect(async () => {
+    if (!lottery) {
+      return;
+    }
     const [token, controller] = await Promise.all([
-      lottery!.getGovernanceToken(),
-      lottery!.getController(),
+      lottery.getGovernanceToken(),
+      lottery.getController(),
     ]);
     setToken(token);
     setController(controller);
