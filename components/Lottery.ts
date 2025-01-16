@@ -400,8 +400,8 @@ export class Lottery {
     const domain = {
       name: '' + (await currencyToken.methods.name().call()),
       version: '1',
-      chainId: Number(await this._web3.eth.getChainId()),
       verifyingContract: currencyToken.options.address!,
+      salt: Number(await this._web3.eth.getChainId()),
     };
     const nonce = this._web3.utils.toBigInt(await permit.methods.getNonce(signer).call());
     const { timestamp } = await this._web3.eth.getBlock();
@@ -421,8 +421,8 @@ export class Lottery {
         EIP712Domain: [
           { name: 'name', type: 'string' },
           { name: 'version', type: 'string' },
-          { name: 'chainId', type: 'uint256' },
           { name: 'verifyingContract', type: 'address' },
+          { name: 'salt', type: 'bytes32' },
         ],
         Permit: [
           { name: 'holder', type: 'address' },
