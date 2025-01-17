@@ -224,11 +224,15 @@ const PlayButton = ({ numbers, onPlayed }: { numbers: number[]; onPlayed: () => 
             showModal('message', 'Play', 'Please select at least 6 numbers.');
             return;
           }
-          if (context?.account) {
-            buyTicket(numbers);
-          } else {
-            setWaitingNumbers(numbers);
-            showModal('wallet');
+          try {
+            if (context?.account) {
+              await buyTicket(numbers);
+            } else {
+              setWaitingNumbers(numbers);
+              await showModal('wallet');
+            }
+          } catch (error) {
+            showModal('message', 'Error', '' + error);
           }
         }}
       >
