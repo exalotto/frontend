@@ -13,6 +13,8 @@ export type CurrencyTokenContract = Contract<typeof CurrencyTokenABI>;
 export type ControllerContract = Contract<typeof ControllerABI>;
 export type GovernanceTokenContract = Contract<typeof GovernanceTokenABI>;
 
+const ONE_DAY_IN_SECONDS = 60 * 60 * 24;
+
 // Specifies how spending approvals are made. Three modes are available:
 //
 // * `manual` means the lottery client will request two separate transactions, one to approve the
@@ -327,12 +329,12 @@ export class Lottery {
       verifyingContract: currencyToken.options.address!,
     };
     const { timestamp } = await this._web3.eth.getBlock();
-    const deadline = Number(timestamp) + 3600;
+    const deadline = Number(timestamp) + ONE_DAY_IN_SECONDS;
     const message = {
       owner: signer,
       spender: this._lotteryAddress,
       value: value.toString(10),
-      nonce: this._web3.utils.toBigInt(await permit.methods.nonces(signer).call()).toString(),
+      nonce: this._web3.utils.toBigInt(await permit.methods.nonces(signer).call()).toString(10),
       deadline,
     };
     const typedData = {
@@ -355,10 +357,7 @@ export class Lottery {
         ],
       },
     };
-    const signature = (await this._web3.currentProvider!.request({
-      method: 'eth_signTypedData_v4',
-      params: [signer, JSON.stringify(typedData)],
-    })) as unknown as string;
+    const signature = await this._web3.eth.signTypedData(signer, typedData);
     const r = signature.slice(0, 66);
     const s = '0x' + signature.slice(66, 130);
     const v = parseInt(signature.slice(130, 132), 16);
@@ -405,11 +404,11 @@ export class Lottery {
     };
     const nonce = this._web3.utils.toBigInt(await permit.methods.getNonce(signer).call());
     const { timestamp } = await this._web3.eth.getBlock();
-    const deadline = Number(timestamp) + 3600;
+    const deadline = Number(timestamp) + ONE_DAY_IN_SECONDS;
     const message = {
       holder: signer,
       spender: this._lotteryAddress,
-      nonce: nonce.toString(),
+      nonce: nonce.toString(10),
       expiry: deadline,
       allowed: true,
     };
@@ -433,10 +432,7 @@ export class Lottery {
         ],
       },
     };
-    const signature = (await this._web3.currentProvider!.request({
-      method: 'eth_signTypedData_v4',
-      params: [signer, JSON.stringify(typedData)],
-    })) as unknown as string;
+    const signature = await this._web3.eth.signTypedData(signer, typedData);
     const r = signature.slice(0, 66);
     const s = '0x' + signature.slice(66, 130);
     const v = parseInt(signature.slice(130, 132), 16);
