@@ -6,7 +6,7 @@ function formatNumber(value: number): string {
   return ('0' + value).slice(-2);
 }
 
-function formatMoney(value: string): number {
+function formatMoney(value: bigint): number {
   return Math.floor(parseFloat(Web3.utils.fromWei(value, 'ether')) * 100) / 100;
 }
 
@@ -43,7 +43,7 @@ const Card = ({
   </div>
 );
 
-const Jackpot = ({ jackpot }: { jackpot: string }) => (
+const Jackpot = ({ jackpot }: { jackpot: bigint }) => (
   <div className="draws__jackpot">
     <div className="draws__jackpot-frame">
       <div className="draws__jackpot-title">Jackpot</div>
@@ -108,7 +108,7 @@ const NoWin = () => (
 
 Card.NoWin = NoWin;
 
-const Prize = ({ matches, prize }: { matches: number; prize: string | null }) => (
+const Prize = ({ matches, prize }: { matches: number; prize: bigint | null }) => (
   <div className="prize">
     <div className="prize__title">You Won!</div>
     {prize !== null ? (

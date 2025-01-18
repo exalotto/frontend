@@ -17,7 +17,7 @@ const Winnings = ({ ticket, prize }: { ticket: Ticket; prize: bigint }) => {
   const matches = ticket
     .draw!.numbers.map(number => ticket.numbers.includes(number))
     .reduce((count, match) => count + (match ? 1 : 0), 0);
-  return <Card.Prize matches={matches} prize={prize.toString()} />;
+  return <Card.Prize matches={matches} prize={prize} />;
 };
 
 const TicketCard = ({ lottery, ticket }: { lottery: Lottery; ticket: Ticket }) => {
