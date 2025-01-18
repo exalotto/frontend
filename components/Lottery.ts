@@ -117,8 +117,8 @@ export interface Draw {
   round: number;
   drawBlock: number;
   closureBlock: number;
-  prizes: string[];
-  stash: string;
+  prizes: bigint[];
+  stash: bigint;
   numbers: number[];
   totalCombinations: number;
   winners: number[];
@@ -141,7 +141,7 @@ export interface Ticket {
 }
 
 export interface TicketExtended extends Ticket {
-  prize: string;
+  prize: bigint;
   withdrawBlockNumber: number;
 }
 
@@ -325,7 +325,7 @@ export class Lottery {
     const domain = {
       name: '' + (await currencyToken.methods.name().call()),
       version: '1',
-      chainId: Number(await this._web3.eth.getChainId()),
+      chainId: this._web3.utils.toBigInt(await this._web3.eth.getChainId()).toString(10),
       verifyingContract: currencyToken.options.address!,
     };
     const { timestamp } = await this._web3.eth.getBlock();
@@ -400,7 +400,10 @@ export class Lottery {
       name: '' + (await currencyToken.methods.name().call()),
       version: '1',
       verifyingContract: currencyToken.options.address!,
-      salt: Number(await this._web3.eth.getChainId()),
+      salt: this._web3.utils.padLeft(
+        this._web3.utils.toBigInt(await this._web3.eth.getChainId()),
+        64,
+      ),
     };
     const nonce = this._web3.utils.toBigInt(await permit.methods.getNonce(signer).call());
     const { timestamp } = await this._web3.eth.getBlock();
@@ -508,7 +511,7 @@ export class Lottery {
 
   public async getTicketIds(account: string): Promise<number[]> {
     const ids: never[] = await this._lotteryContract.methods.getTicketIds(account).call();
-    return ids.map(id => parseInt(id, 10));
+    return ids.map(id => Number(this._web3.utils.toBigInt(id)));
   }
 
   public async getTicket(id: number): Promise<Ticket> {
@@ -523,7 +526,7 @@ export class Lottery {
       blockNumber: string;
       numbers: string[];
     } = await this._lotteryContract.methods.getTicket(id).call();
-    const parsedRound = parseInt(round, 10);
+    const parsedRound = this._web3.utils.toNumber(round) as number;
     const [draw, timestamp, logs, logs6] = await Promise.all([
       (async () => {
         const currentRound = await this.getCurrentRound();
@@ -531,7 +534,7 @@ export class Lottery {
       })(),
       (async () => {
         const { timestamp } = await this._web3.eth.getBlock(blockNumber);
-        return timestamp;
+        return this._web3.utils.toNumber(timestamp) as number;
       })(),
       this._lotteryContract.getPastEvents('Ticket' as never, {
         filter: { round, id },
@@ -546,12 +549,12 @@ export class Lottery {
     ]);
     const result: Ticket = {
       id: id,
-      blockNumber: parseInt(blockNumber, 10),
-      date: new Date(parseInt('' + timestamp, 10) * 1000),
+      blockNumber: this._web3.utils.toNumber(blockNumber) as number,
+      date: new Date(timestamp * 1000),
       round: parsedRound,
       draw: draw,
       player: player,
-      numbers: numbers.map(number => parseInt(number, 10)),
+      numbers: numbers.map(number => this._web3.utils.toNumber(number) as number),
     };
     if (logs.length > 0) {
       result.txHash = logs[0].transactionHash;
@@ -564,7 +567,11 @@ export class Lottery {
   public async getExtendedTicket(ticket: Ticket): Promise<TicketExtended> {
     const { prize, withdrawBlockNumber }: { prize: string; withdrawBlockNumber: string } =
       await this._lotteryContract.methods.getTicketPrize(ticket.id).call();
-    return { ...ticket, prize, withdrawBlockNumber: parseInt(withdrawBlockNumber, 10) };
+    return {
+      ...ticket,
+      prize: this._web3.utils.toBigInt(prize),
+      withdrawBlockNumber: this._web3.utils.toNumber(withdrawBlockNumber) as number,
+    };
   }
 
   private static _sanitizeRoundNumber(currentRound: number, round?: number): number {
@@ -586,8 +593,10 @@ export class Lottery {
   }
 
   public async getTimeOfNextDraw(): Promise<Date> {
-    const nextDrawTime: unknown = await this._lotteryContract.methods.getNextDrawTime().call();
-    return new Date(parseInt(nextDrawTime as string, 10) * 1000);
+    const nextDrawTime = this._web3.utils.toNumber(
+      await this._lotteryContract.methods.getNextDrawTime().call(),
+    ) as number;
+    return new Date(nextDrawTime * 1000);
   }
 
   public async getDrawData(round?: number): Promise<Draw> {
@@ -612,15 +621,15 @@ export class Lottery {
     } = await this._lotteryContract.methods.getRoundData(round).call();
     const { timestamp } = await this._web3.eth.getBlock(drawBlockNumber);
     return {
-      date: new Date(parseInt('' + timestamp, 10) * 1000),
+      date: new Date((this._web3.utils.toNumber(timestamp) as number) * 1000),
       round: round,
-      drawBlock: parseInt(drawBlockNumber, 10),
-      closureBlock: parseInt(closureBlockNumber, 10),
-      prizes: prizes,
-      stash: stash,
-      numbers: numbers.map(number => parseInt(number, 10)),
-      totalCombinations: parseInt(totalCombinations, 10),
-      winners: winners.map(winners => parseInt(winners, 10)),
+      drawBlock: this._web3.utils.toNumber(drawBlockNumber) as number,
+      closureBlock: this._web3.utils.toNumber(closureBlockNumber) as number,
+      prizes: prizes.map(prize => this._web3.utils.toBigInt(prize)),
+      stash: this._web3.utils.toBigInt(stash),
+      numbers: numbers.map(number => this._web3.utils.toNumber(number) as number),
+      totalCombinations: this._web3.utils.toNumber(totalCombinations) as number,
+      winners: winners.map(winners => this._web3.utils.toNumber(winners) as number),
     };
   }
 
