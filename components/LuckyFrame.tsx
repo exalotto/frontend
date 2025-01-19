@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from 'react';
 
+import Link from 'next/link';
+
 import Web3 from 'web3';
 
+import type { Receipt } from './Lottery';
 import { useLottery } from './LotteryContext';
-import { useModals } from './Modals';
+import { Modal, type ModalStateInstance, useModals } from './Modals';
 import { range, COMBINATIONS, useAsyncEffect } from './Utilities';
 
 const Picker = ({ numbers, onClick }: { numbers: number[]; onClick: (number: number) => void }) => (
@@ -363,3 +366,53 @@ export const LuckyFrame = () => {
     </div>
   );
 };
+
+type ReceiptModalParams = [number[], Receipt];
+
+export const ReceiptModal = () => (
+  <Modal
+    name="receipt"
+    title="Ticket Submitted!"
+    className="modal-dialog modal-dialog-sm modal-dialog-centered modal-ticket-submitted"
+    resolveOnHide
+  >
+    {({ params: [numbers, receipt] }: ModalStateInstance<ReceiptModalParams>) => (
+      <>
+        <div className="card-section">
+          <div className="card-section__title">You played the following numbers:</div>
+          <div className="card-section__body">
+            {numbers.map((number, key) => (
+              <div key={key} className="card-section__item">
+                <span className="card-section__text">{number}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="transactions-final">
+          <div className="transactions-final__in">
+            <div className="transactions-final__item">
+              <div>
+                Transaction:{' '}
+                <span className="transactions-final__trans-id">
+                  <Link
+                    href={`http://${process.env.NEXT_PUBLIC_BLOCK_EXPLORER}/tx/${receipt.transactionHash}`}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {receipt.transactionHash.substring(0, 22)}&hellip;
+                  </Link>
+                </span>
+              </div>
+            </div>
+            <div className="transactions-final__line"></div>
+            <div className="transactions-final__address">
+              <div className="transactions-final__address-title">
+                Your tickets are listed in the "My Tickets" page. Remember to connect your wallet.
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    )}
+  </Modal>
+);
