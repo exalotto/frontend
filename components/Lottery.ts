@@ -112,6 +112,13 @@ export interface Receipt {
   blockNumber: bigint;
 }
 
+export interface DrawSettings {
+  vrfSubscriptionId: string;
+  vrfKeyHash: string;
+  nativePayment?: boolean;
+  signer?: string;
+}
+
 export interface Draw {
   date: Date;
   round: number;
@@ -597,6 +604,25 @@ export class Lottery {
       await this._lotteryContract.methods.getNextDrawTime().call(),
     ) as number;
     return new Date(nextDrawTime * 1000);
+  }
+
+  public async canDraw(): Promise<boolean> {
+    const controller = await this._controllerContract.get();
+    return controller.methods.canDraw().call();
+  }
+
+  public async draw(settings: DrawSettings): Promise<void> {
+    const from = settings.signer || this._defaultSigner || void 0;
+    const controller = await this._controllerContract.get();
+    await controller.methods
+      .draw(settings.vrfSubscriptionId, settings.vrfKeyHash, !!settings.nativePayment)
+      .send({ from });
+  }
+
+  public async closeRound(signer?: string): Promise<void> {
+    const from = signer || this._defaultSigner || void 0;
+    const controller = await this._controllerContract.get();
+    await controller.methods.closeRound().send({ from });
   }
 
   public async getDrawData(round?: number): Promise<Draw> {

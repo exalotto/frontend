@@ -59,12 +59,12 @@ and all tickets matching two or more of the drawn numbers are awarded a prize. W
 [ChainLink VRF][chainlink-vrf] to draw the 6 random numbers securely.
 
 Tickets with more than 6 numbers, which we call _higher-order tickets_ throughout this paper, are in
-every possible regard treated as if the player bought all possible 6-combinations that can be chosen
-from those numbers. For example, a ticket with 8 numbers is equivalent to ${8 \choose 6} = 28$
-different 6-number tickets, and in general a ticket with $k$ numbers (with $k \ge 6$) is equivalent
-to ${k \choose 6}$ different 6-number tickets, with ${k \choose 6}$ being the [binomial
-coefficient][binomial-coefficient] _"k choose 6"_ representing the number of ways to choose 6
-elements from a set of $k$.
+every possible regard treated as if the player purchased all possible 6-combinations that can be
+chosen from those numbers. For example, a ticket with 8 numbers is equivalent to
+${8 \choose 6} = 28$ different 6-number tickets, and in general a ticket with $k$ numbers (with
+$k \ge 6$) is equivalent to ${k \choose 6}$ different 6-number tickets, with ${k \choose 6}$ being
+the [binomial coefficient][binomial-coefficient] _"k choose 6"_ representing the number of ways to
+choose 6 elements from a set of $k$.
 
 The entire project uses the Dai stablecoin as a currency (see [MakerDAO][makerdao] for more
 information): tickets are paid for in Dai and all prizes and revenues are in Dai. This way the
@@ -193,7 +193,7 @@ ExaLotto has two important properties:
 
 1. 6-tickets must be rewarded only from their highest winning category (e.g. a ticket with 4 matches
    will not also be rewarded for matching 3 or 2 numbers in several ways);
-2. tickets with more than 6 numbers must be treated exactly as if the player bought all possible
+2. tickets with more than 6 numbers must be treated exactly as if the player purchased all possible
    6-tickets with those numbers, which are $n \choose 6$ for an $n$-ticket.
 
 If a player buys the following 6-ticket:
@@ -209,7 +209,7 @@ $$
 $$
 
 property #1 dictates that the player will receive a prize from the 4-match category but **not**
-$4 \choose 3$ prixes from the 3-match category or $4 \choose 2$ from the 2-match one.
+$4 \choose 3$ prizes from the 3-match category or $4 \choose 2$ from the 2-match one.
 
 Higher-order tickets however make things more complex. Let’s suppose a player bought the following
 8-ticket:
@@ -621,7 +621,7 @@ $$
 
 `mapping` slots, which does not pose any scalability challenge.
 
-That is also the number of `mapping` slots the ticket-buying algorithm will have to _write_ for a
+That is also the number of `mapping` slots the ticket purchase algorithm will have to _write_ for a
 6-number ticket, which is somewhat more critical. Writing a non-zero value to a storage slot that is
 initially zero costs 20,000 gas units, as implied by the [official specification][storage-gas-costs]
 (we are assuming cold access). Indexing a 6-number ticket whose numbers have never been played
@@ -670,7 +670,7 @@ Gas fees are usually much lower than 500 Gwei and not all tickets will perform c
 slots, so the average ticket prices will be much better.
 
 The goal of the rest of this section is to write a Solidity function called `indexTicket` that takes
-6 or more numbers between 1 and 90 inclusive (the numbers chosen by the player when buying the
+6 or more numbers between 1 and 90 inclusive (the numbers chosen by the player when purchasing the
 ticket) and indexes all of their possible 2-combinations, 3-combinations, 4-combinations,
 5-combinations, and 6-combinations in a data structure for later retrieval by the
 [drawing algorithm](#finding-the-winners).
@@ -798,9 +798,9 @@ function choose(uint n, uint k) private pure returns (uint) {
   } else if (k == 0) {
     return 1;  // base case 2
   } else if (k * 2 > n) {
-    return _choose(n, n - k);  // optimize by property (1)
+    return choose(n, n - k);  // optimize by property (1)
   } else {
-    return (n * _choose(n - 1, k - 1)) / k;  // recurse by property (2)
+    return (n * choose(n - 1, k - 1)) / k;  // recurse by property (2)
   }
 }
 ```
@@ -1028,9 +1028,10 @@ The goal of this phase of the drawing algorithm is to yield five unsigned intege
 corresponding to the number of winning 6-combinations in each category.
 
 Note that we need to count 6-combinations rather than tickets because, as explained previously, all
-higher-order tickets are treated exactly as if the player bought a set of 6-tickets corresponding to
-all 6-combinations in the higher-order ticket. The price of a ticket is proportional to the number
-of 6-combinations in it, so a fair prize must also be proportional to the number of 6-combinations.
+higher-order tickets are treated exactly as if the player purchased a set of 6-tickets corresponding
+to all 6-combinations in the higher-order ticket. The price of a ticket is proportional to the
+number of 6-combinations in it, so a fair prize must also be proportional to the number of
+6-combinations.
 
 Once we have these five numbers we can store them in a data structure associated to the current
 round of the lottery, and all prize withdrawals will refer to that structure to determine the prize

@@ -9,7 +9,7 @@ import Web3 from 'web3';
 import type { Receipt } from './Lottery';
 import { useLottery } from './LotteryContext';
 import { Modal, type ModalStateInstance, useModals } from './Modals';
-import { range, COMBINATIONS, useAsyncEffect } from './Utilities';
+import { range, COMBINATIONS, useAsyncEffect, MONTHS } from './Utilities';
 
 const Picker = ({ numbers, onClick }: { numbers: number[]; onClick: (number: number) => void }) => (
   <div className="lucky-picker d-none d-lg-block">
@@ -164,8 +164,6 @@ const NumberStats = ({ numbers }: { numbers: number[] }) => {
     </div>
   );
 };
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const PlayButton = ({ numbers, onPlayed }: { numbers: number[]; onPlayed: () => void }) => {
   const { context, lottery } = useLottery();
