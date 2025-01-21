@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import Link from 'next/link';
+
 import type { ControllerContract, GovernanceTokenContract } from '@/components/Lottery';
 import { useLottery, type Web3Context } from '@/components/LotteryContext';
 import { formatBigNumber, useAsyncEffect } from '@/components/Utilities';
@@ -41,13 +43,13 @@ const DynamicStatus = ({
       <p>Greetings, esteemed partner!</p>
       <p>
         You are connected as:{' '}
-        <a
+        <Link
           href={`https://${process.env.NEXT_PUBLIC_BLOCK_EXPLORER}/address/${account}`}
           target="_blank"
           rel="noreferrer"
         >
           {account}
-        </a>
+        </Link>
       </p>
       {balance ? (
         <p>

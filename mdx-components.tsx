@@ -11,7 +11,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         // external link
         return (
           <a href={href} {...props} target="_blank" rel="noreferrer">
-            {children}
+            {children}&#10548;
           </a>
         );
       } else {

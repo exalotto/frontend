@@ -21,7 +21,7 @@ const Card = ({
   date: Date;
   onAction: (() => void) | null;
   actionTitle: string;
-  actionEnabled: boolean;
+  actionEnabled?: boolean;
 }) => (
   <div className="draws__item">
     <div className="draws__frame">

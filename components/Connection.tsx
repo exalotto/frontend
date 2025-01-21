@@ -14,7 +14,7 @@ import { NetworkConnector } from '@web3-react/network-connector';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { WalletConnectConnector } from '@web3-react/walletconnect-connector';
 
-import { MessageModalParams, Modal, ModalStateInstance, useModals } from './Modals';
+import { type MessageModalParams, Modal, type ModalStateInstance, useModals } from './Modals';
 
 import metaMaskLogo from '@/images/metamask.png';
 import walletConnectLogo from '@/images/walletconnect.png';

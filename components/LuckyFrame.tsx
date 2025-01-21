@@ -214,7 +214,7 @@ const PlayButton = ({ numbers, onPlayed }: { numbers: number[]; onPlayed: () => 
       setWaitingNumbers(null);
       buyTicket(numbers);
     }
-  }, [waitingNumbers, context?.account, lottery?.defaultSigner]);
+  }, [waitingNumbers, context, lottery, context?.account, lottery?.defaultSigner]);
 
   return (
     <div className="lucky-list__buttons">

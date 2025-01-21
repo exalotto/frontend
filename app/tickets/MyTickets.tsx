@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import Link from 'next/link';
+
 import { useWeb3React } from '@web3-react/core';
 
 import Card from '@/components/Cards';
@@ -34,19 +36,18 @@ const TicketCard = ({ lottery, ticket }: { lottery: Lottery; ticket: Ticket }) =
   return (
     <Card
       date={ticket.date}
-      onAction={prize ? () => lottery.withdrawPrize(ticket.id, account!) : null}
-      actionTitle={withdrawn ? 'Withdrawn' : 'Withdraw'}
-      actionEnabled={!withdrawn}
+      onAction={prize && !withdrawn ? () => lottery.withdrawPrize(ticket.id, account!) : null}
+      actionTitle="Claim Prize!"
     >
       {ticket.txHash ? (
         <Card.Section title="Transaction">
-          <a
+          <Link
             href={`https://${process.env.NEXT_PUBLIC_BLOCK_EXPLORER}/tx/${ticket.txHash}`}
             target="_blank"
             rel="noreferrer"
           >
             {ticket.txHash.substring(0, 22)}&hellip;
-          </a>
+          </Link>
         </Card.Section>
       ) : null}
       <Card.Numbers
@@ -61,7 +62,7 @@ const TicketCard = ({ lottery, ticket }: { lottery: Lottery; ticket: Ticket }) =
           highlightedNumbers={ticket.numbers}
         />
       ) : null}
-      {ticket.draw && prize ? <Winnings ticket={ticket} prize={prize} /> : null}
+      {ticket.draw && prize !== null ? <Winnings ticket={ticket} prize={prize} /> : null}
     </Card>
   );
 };

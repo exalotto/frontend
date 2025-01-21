@@ -11,7 +11,7 @@ import { Article } from '@/components/Article';
 import { BigButton } from '@/components/BigButton';
 import type { ControllerContract, Lottery } from '@/components/Lottery';
 import { useLottery } from '@/components/LotteryContext';
-import { ModalContext } from '@/components/Modals';
+import { useModals } from '@/components/Modals';
 import { MONTHS, useAsyncEffect } from '@/components/Utilities';
 import { useWeb3React } from '@web3-react/core';
 
@@ -120,91 +120,88 @@ const TriggerStage = ({ lottery }: { lottery: Lottery }) => {
   const [subscriptionId, setSubscriptionId] = useState<string>('');
   const [keyHash, setKeyHash] = useState<string>('');
   const [nativePayment, setNativePayment] = useState(false);
+  const { showModal } = useModals();
   return (
-    <ModalContext.Consumer>
-      {({ showModal }) => (
-        <>
-          <h2 className="text-center text-primary fw-bold">1. Trigger</h2>
-          <Form
-            onSubmit={async e => {
-              e.preventDefault();
-              try {
-                if (account) {
-                  await lottery.draw({
-                    vrfSubscriptionId:
-                      subscriptionId || process.env.NEXT_PUBLIC_DEFAULT_VRF_SUBSCRIPTION!,
-                    vrfKeyHash: keyHash || process.env.NEXT_PUBLIC_VRF_KEY_HASH!,
-                    nativePayment,
-                    signer: account,
-                  });
-                } else {
-                  await showModal('wallet');
-                }
-              } catch (error) {
-                console.error(error);
-                await showModal('message', 'Error', '' + error);
-              }
-            }}
-          >
+    <>
+      <h2 className="text-center text-primary fw-bold">1. Trigger</h2>
+      <Form
+        onSubmit={async e => {
+          e.preventDefault();
+          try {
+            if (account) {
+              await lottery.draw({
+                vrfSubscriptionId:
+                  subscriptionId || process.env.NEXT_PUBLIC_DEFAULT_VRF_SUBSCRIPTION!,
+                vrfKeyHash: keyHash || process.env.NEXT_PUBLIC_VRF_KEY_HASH!,
+                nativePayment,
+                signer: account,
+              });
+            } else {
+              await showModal('wallet');
+            }
+          } catch (error) {
+            console.error(error);
+            await showModal('message', 'Error', '' + error);
+          }
+        }}
+      >
+        <Form.Check
+          id="use-default-settings"
+          name="settings"
+          type="radio"
+          label="Default settings"
+          checked={useDefaultSettings}
+          onChange={e => setUseDefaultSettings(e.target.checked)}
+        />
+        <Form.Check
+          id="use-custom-settings"
+          name="settings"
+          type="radio"
+          label="Custom settings (advanced)"
+          checked={!useDefaultSettings}
+          onChange={e => setUseDefaultSettings(!e.target.checked)}
+        />
+        {useDefaultSettings ? null : (
+          <>
+            <Form.Group className="mt-3 ms-4">
+              <Form.Label htmlFor="subscription-id">VRF subscription ID</Form.Label>
+              <Form.Control
+                id="subscription-id"
+                type="input"
+                value={subscriptionId}
+                onChange={e => setSubscriptionId(e.target.value)}
+                placeholder={`Default: ${process.env.NEXT_PUBLIC_DEFAULT_VRF_SUBSCRIPTION}`}
+              />
+            </Form.Group>
+            <Form.Group className="mt-3 ms-4">
+              <Form.Label htmlFor="key-hash">VRF key hash</Form.Label>
+              <Form.Control
+                id="key-hash"
+                type="input"
+                value={keyHash}
+                onChange={e => setKeyHash(e.target.value)}
+                placeholder={`Default: ${process.env.NEXT_PUBLIC_VRF_KEY_HASH} for 500 Gwei`}
+              />
+            </Form.Group>
             <Form.Check
-              id="use-default-settings"
-              name="settings"
-              type="radio"
-              label="Default settings"
-              checked={useDefaultSettings}
-              onChange={e => setUseDefaultSettings(e.target.checked)}
+              className="mt-3 ms-4"
+              id="native-payment"
+              type="switch"
+              label="Native payment"
+              checked={nativePayment}
+              onChange={e => setNativePayment(e.target.checked)}
             />
-            <Form.Check
-              id="use-custom-settings"
-              name="settings"
-              type="radio"
-              label="Custom settings (advanced)"
-              checked={!useDefaultSettings}
-              onChange={e => setUseDefaultSettings(!e.target.checked)}
-            />
-            {useDefaultSettings ? null : (
-              <>
-                <Form.Group className="mt-3 ms-4">
-                  <Form.Label htmlFor="subscription-id">VRF subscription ID</Form.Label>
-                  <Form.Control
-                    id="subscription-id"
-                    type="input"
-                    value={subscriptionId}
-                    onChange={e => setSubscriptionId(e.target.value)}
-                    placeholder={`Default: ${process.env.NEXT_PUBLIC_DEFAULT_VRF_SUBSCRIPTION}`}
-                  />
-                </Form.Group>
-                <Form.Group className="mt-3 ms-4">
-                  <Form.Label htmlFor="key-hash">VRF key hash</Form.Label>
-                  <Form.Control
-                    id="key-hash"
-                    type="input"
-                    value={keyHash}
-                    onChange={e => setKeyHash(e.target.value)}
-                    placeholder={`Default: ${process.env.NEXT_PUBLIC_VRF_KEY_HASH} for 500 Gwei`}
-                  />
-                </Form.Group>
-                <Form.Check
-                  className="mt-3 ms-4"
-                  id="native-payment"
-                  type="switch"
-                  label="Native payment"
-                  checked={nativePayment}
-                  onChange={e => setNativePayment(e.target.checked)}
-                />
-              </>
-            )}
-            <div className="my-3 text-center">
-              <BigButton type="submit">Draw!</BigButton>
-            </div>
-          </Form>
-          <VerticalBar />
-          <h2 className="text-center text-secondary fw-bold">2. Wait for VRF</h2>
-          <VerticalBar />
-          <h2 className="text-center text-secondary fw-bold">3. Close Round</h2>
-        </>
-      )}
-    </ModalContext.Consumer>
+          </>
+        )}
+        <div className="my-3 text-center">
+          <BigButton type="submit">Draw!</BigButton>
+        </div>
+      </Form>
+      <VerticalBar />
+      <h2 className="text-center text-secondary fw-bold">2. Wait for VRF</h2>
+      <VerticalBar />
+      <h2 className="text-center text-secondary fw-bold">3. Close Round</h2>
+    </>
   );
 };
 
@@ -243,38 +240,48 @@ const WaitVRFStage = ({ lottery }: { lottery: Lottery }) => {
   );
 };
 
-const CloseRoundStage = ({ lottery }: { lottery: Lottery }) => {
-  const { account } = useWeb3React<Web3>();
+const CloseRoundStage = () => {
+  const { context, lottery } = useLottery();
+  const [pendingAction, setPendingAction] = useState(false);
+  const { showModal } = useModals();
+  useAsyncEffect(async () => {
+    if (pendingAction && lottery && context && context.account) {
+      setPendingAction(false);
+      try {
+        await lottery.closeRound(context.account);
+      } catch (error) {
+        console.error(error);
+        await showModal('message', 'Error', '' + error);
+      }
+    }
+  }, [context, context?.account, lottery, pendingAction, showModal]);
   return (
-    <ModalContext.Consumer>
-      {({ showModal }) => (
-        <>
-          <h2 className="text-center text-secondary fw-bold">1. Trigger</h2>
-          <VerticalBar />
-          <h2 className="text-center text-secondary fw-bold">2. Wait for VRF</h2>
-          <VerticalBar />
-          <h2 className="text-center text-primary fw-bold">3. Close Round</h2>
-          <div className="my-3 text-center">
-            <BigButton
-              onClick={async () => {
-                try {
-                  if (account) {
-                    await lottery.closeRound();
-                  } else {
-                    await showModal('wallet');
-                  }
-                } catch (error) {
-                  console.error(error);
-                  await showModal('message', 'Error', '' + error);
-                }
-              }}
-            >
-              Close Round
-            </BigButton>
-          </div>
-        </>
-      )}
-    </ModalContext.Consumer>
+    <>
+      <h2 className="text-center text-secondary fw-bold">1. Trigger</h2>
+      <VerticalBar />
+      <h2 className="text-center text-secondary fw-bold">2. Wait for VRF</h2>
+      <VerticalBar />
+      <h2 className="text-center text-primary fw-bold">3. Close Round</h2>
+      <div className="my-3 text-center">
+        <BigButton
+          onClick={async () => {
+            try {
+              if (lottery && context?.account) {
+                await lottery.closeRound(context.account);
+              } else {
+                setPendingAction(true);
+                await showModal('wallet');
+              }
+            } catch (error) {
+              console.error(error);
+              await showModal('message', 'Error', '' + error);
+            }
+          }}
+        >
+          Close Round
+        </BigButton>
+      </div>
+    </>
   );
 };
 
@@ -314,7 +321,7 @@ const DrawManager = ({ lottery }: { lottery: Lottery }) => {
     case 'wait':
       return <WaitVRFStage lottery={lottery} />;
     case 'close':
-      return <CloseRoundStage lottery={lottery} />;
+      return <CloseRoundStage />;
     default:
       return null;
   }
