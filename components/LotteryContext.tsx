@@ -14,10 +14,17 @@ export interface Web3Context {
   account?: string | null;
 }
 
-export const LotteryContext = React.createContext({
-  context: null as Web3Context | null,
-  lottery: null as Lottery | null,
-});
+export interface LotteryContext {
+  context: Web3Context | null;
+  lottery: Lottery | null;
+}
+
+const NULL_CONTEXT: LotteryContext = {
+  context: null,
+  lottery: null,
+};
+
+export const LotteryContext = React.createContext<LotteryContext>(NULL_CONTEXT);
 
 export const useLottery = () => useContext(LotteryContext);
 
@@ -33,21 +40,22 @@ function sanitizeSpendingApprovalMode(): SpendingApprovalMode {
 }
 
 export const LotteryContextProvider = ({ children }: PropsWithChildren) => {
-  const context = useWeb3React<Web3>();
-  const [lottery, setLottery] = useState<Lottery | null>(null);
+  const web3Context = useWeb3React<Web3>();
+  const [lotteryContext, setLotteryContext] = useState<LotteryContext>(NULL_CONTEXT);
   useEffect(() => {
-    if (context.active && context.library) {
-      setLottery(
-        new Lottery({
-          web3: context.library,
+    if (web3Context.active && web3Context.library) {
+      setLotteryContext({
+        context: web3Context,
+        lottery: new Lottery({
+          web3: web3Context.library,
           lotteryAddress: process.env.NEXT_PUBLIC_LOTTERY_ADDRESS!,
-          defaultSigner: context.account || void 0,
+          defaultSigner: web3Context.account || void 0,
           defaultSpendingApprovalMode: sanitizeSpendingApprovalMode(),
         }),
-      );
+      });
     } else {
-      setLottery(null);
+      setLotteryContext(NULL_CONTEXT);
     }
-  }, [context.active, context.library, context.account]);
-  return <LotteryContext.Provider value={{ context, lottery }}>{children}</LotteryContext.Provider>;
+  }, [web3Context, web3Context?.active, web3Context?.library, web3Context?.account]);
+  return <LotteryContext.Provider value={lotteryContext}>{children}</LotteryContext.Provider>;
 };
