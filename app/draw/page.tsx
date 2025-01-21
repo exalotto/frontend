@@ -5,15 +5,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Form } from 'react-bootstrap';
 
-import type Web3 from 'web3';
-
 import { Article } from '@/components/Article';
 import { BigButton } from '@/components/BigButton';
 import type { ControllerContract, Lottery } from '@/components/Lottery';
 import { useLottery } from '@/components/LotteryContext';
 import { useModals } from '@/components/Modals';
 import { MONTHS, useAsyncEffect } from '@/components/Utilities';
-import { useWeb3React } from '@web3-react/core';
 
 const ONE_SECOND_MS = 1000;
 const ONE_MINUTE_MS = 60 * 1000;
@@ -99,6 +96,7 @@ const MaybeCountdown = ({ lottery }: { lottery: Lottery }) => {
   } else if (Date.now() < nextStart.getTime()) {
     return <Countdown nextStart={nextStart} />;
   } else {
+    // The drawing window has started but `canDraw` hasn't returned True yet.
     return <Waiter lottery={lottery} />;
   }
 };
@@ -114,13 +112,33 @@ const VerticalBar = () => (
   ></div>
 );
 
-const TriggerStage = ({ lottery }: { lottery: Lottery }) => {
-  const { account } = useWeb3React<Web3>();
+const TriggerStage = () => {
+  const { context, lottery } = useLottery();
   const [useDefaultSettings, setUseDefaultSettings] = useState(true);
   const [subscriptionId, setSubscriptionId] = useState<string>('');
   const [keyHash, setKeyHash] = useState<string>('');
   const [nativePayment, setNativePayment] = useState(false);
+  const [pendingAction, setPendingAction] = useState(false);
   const { showModal } = useModals();
+  useAsyncEffect(async () => {
+    if (context?.account && lottery && pendingAction) {
+      setPendingAction(false);
+      try {
+        await lottery!.draw({
+          vrfSubscriptionId: subscriptionId || process.env.NEXT_PUBLIC_DEFAULT_VRF_SUBSCRIPTION!,
+          vrfKeyHash: keyHash || process.env.NEXT_PUBLIC_VRF_KEY_HASH!,
+          nativePayment,
+          signer: context.account,
+        });
+      } catch (error) {
+        console.error(error);
+        showModal('message', 'Error', '' + error);
+      }
+    }
+  }, [context?.account, lottery, pendingAction, subscriptionId, keyHash, nativePayment, showModal]);
+  if (!lottery) {
+    return null;
+  }
   return (
     <>
       <h2 className="text-center text-primary fw-bold">1. Trigger</h2>
@@ -128,15 +146,16 @@ const TriggerStage = ({ lottery }: { lottery: Lottery }) => {
         onSubmit={async e => {
           e.preventDefault();
           try {
-            if (account) {
-              await lottery.draw({
+            if (context?.account) {
+              await lottery!.draw({
                 vrfSubscriptionId:
                   subscriptionId || process.env.NEXT_PUBLIC_DEFAULT_VRF_SUBSCRIPTION!,
                 vrfKeyHash: keyHash || process.env.NEXT_PUBLIC_VRF_KEY_HASH!,
                 nativePayment,
-                signer: account,
+                signer: context.account,
               });
             } else {
+              setPendingAction(true);
               await showModal('wallet');
             }
           } catch (error) {
@@ -245,16 +264,19 @@ const CloseRoundStage = () => {
   const [pendingAction, setPendingAction] = useState(false);
   const { showModal } = useModals();
   useAsyncEffect(async () => {
-    if (pendingAction && lottery && context && context.account) {
+    if (pendingAction && lottery && context?.account) {
       setPendingAction(false);
       try {
         await lottery.closeRound(context.account);
       } catch (error) {
         console.error(error);
-        await showModal('message', 'Error', '' + error);
+        showModal('message', 'Error', '' + error);
       }
     }
-  }, [context, context?.account, lottery, pendingAction, showModal]);
+  }, [context?.account, lottery, pendingAction, showModal]);
+  if (!lottery) {
+    return null;
+  }
   return (
     <>
       <h2 className="text-center text-secondary fw-bold">1. Trigger</h2>
@@ -317,7 +339,7 @@ const DrawManager = ({ lottery }: { lottery: Lottery }) => {
     case 'round':
       return <MaybeCountdown lottery={lottery} />;
     case 'trigger':
-      return <TriggerStage lottery={lottery} />;
+      return <TriggerStage />;
     case 'wait':
       return <WaitVRFStage lottery={lottery} />;
     case 'close':
