@@ -2,59 +2,23 @@
 
 import { useEffect, useState } from 'react';
 
+import Link from 'next/link';
+import { Form } from 'react-bootstrap';
+
+import type Web3 from 'web3';
+
+import { Article } from '@/components/Article';
+import { BigButton } from '@/components/BigButton';
 import type { ControllerContract, Lottery } from '@/components/Lottery';
 import { useLottery } from '@/components/LotteryContext';
+import { ModalContext } from '@/components/Modals';
 import { MONTHS, useAsyncEffect } from '@/components/Utilities';
-import { Article } from '@/components/Article';
-import Link from 'next/link';
+import { useWeb3React } from '@web3-react/core';
 
 const ONE_SECOND_MS = 1000;
 const ONE_MINUTE_MS = 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-
-type ResolveCanDraw = (value: boolean) => void;
-type RejectCanDraw = (error: unknown) => void;
-
-class AsyncChecker {
-  private _lottery: Lottery;
-  private _checking: boolean = false;
-  private _callbacks: [ResolveCanDraw, RejectCanDraw][] = [];
-
-  public constructor(lottery: Lottery) {
-    this._lottery = lottery;
-  }
-
-  private async _checkInternal(): Promise<boolean> {
-    this._checking = true;
-    try {
-      return await this._lottery.canDraw();
-    } finally {
-      this._checking = false;
-    }
-  }
-
-  public async check(): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      this._callbacks.push([resolve, reject]);
-      if (!this._checking) {
-        this._checkInternal()
-          .then(result => {
-            this._callbacks.forEach(([resolve]) => resolve(result));
-            this._callbacks = [];
-          })
-          .catch(error => {
-            this._callbacks.forEach(([, reject]) => reject(error));
-            this._callbacks = [];
-          });
-      }
-    });
-  }
-
-  public cancel(): void {
-    this._callbacks = [];
-  }
-}
 
 function padLeft(value: number): string {
   if (value >= 0 && value < 10) {
@@ -90,9 +54,8 @@ const Countdown = ({ nextStart }: { nextStart: Date }) => {
         </b>{' '}
         at{' '}
         <b>
-          {padLeft(nextStart.getUTCHours())}:{padLeft(nextStart.getUTCMinutes())}
-        </b>{' '}
-        UTC
+          {padLeft(nextStart.getHours())}:{padLeft(nextStart.getMinutes())}
+        </b>
       </p>
       <p>
         Countdown: {getDays()} days, {getHours()} hours, {getMinutes()} minutes, {getSeconds()}{' '}
@@ -140,33 +103,229 @@ const MaybeCountdown = ({ lottery }: { lottery: Lottery }) => {
   }
 };
 
-const DrawPanel = ({ lottery }: { lottery: Lottery }) => {
-  return <>{/* TODO */}</>;
+const VerticalBar = () => (
+  <div
+    style={{
+      margin: 'auto',
+      width: 0,
+      height: 50,
+      border: '1px solid #9bd7ff',
+    }}
+  ></div>
+);
+
+const TriggerStage = ({ lottery }: { lottery: Lottery }) => {
+  const { account } = useWeb3React<Web3>();
+  const [useDefaultSettings, setUseDefaultSettings] = useState(true);
+  const [subscriptionId, setSubscriptionId] = useState<string>('');
+  const [keyHash, setKeyHash] = useState<string>('');
+  const [nativePayment, setNativePayment] = useState(false);
+  return (
+    <ModalContext.Consumer>
+      {({ showModal }) => (
+        <>
+          <h2 className="text-center text-primary fw-bold">1. Trigger</h2>
+          <Form
+            onSubmit={async e => {
+              e.preventDefault();
+              try {
+                if (account) {
+                  await lottery.draw({
+                    vrfSubscriptionId:
+                      subscriptionId || process.env.NEXT_PUBLIC_DEFAULT_VRF_SUBSCRIPTION!,
+                    vrfKeyHash: keyHash || process.env.NEXT_PUBLIC_VRF_KEY_HASH!,
+                    nativePayment,
+                    signer: account,
+                  });
+                } else {
+                  await showModal('wallet');
+                }
+              } catch (error) {
+                console.error(error);
+                await showModal('message', 'Error', '' + error);
+              }
+            }}
+          >
+            <Form.Check
+              id="use-default-settings"
+              name="settings"
+              type="radio"
+              label="Default settings"
+              checked={useDefaultSettings}
+              onChange={e => setUseDefaultSettings(e.target.checked)}
+            />
+            <Form.Check
+              id="use-custom-settings"
+              name="settings"
+              type="radio"
+              label="Custom settings (advanced)"
+              checked={!useDefaultSettings}
+              onChange={e => setUseDefaultSettings(!e.target.checked)}
+            />
+            {useDefaultSettings ? null : (
+              <>
+                <Form.Group className="mt-3 ms-4">
+                  <Form.Label htmlFor="subscription-id">VRF subscription ID</Form.Label>
+                  <Form.Control
+                    id="subscription-id"
+                    type="input"
+                    value={subscriptionId}
+                    onChange={e => setSubscriptionId(e.target.value)}
+                    placeholder={`Default: ${process.env.NEXT_PUBLIC_DEFAULT_VRF_SUBSCRIPTION}`}
+                  />
+                </Form.Group>
+                <Form.Group className="mt-3 ms-4">
+                  <Form.Label htmlFor="key-hash">VRF key hash</Form.Label>
+                  <Form.Control
+                    id="key-hash"
+                    type="input"
+                    value={keyHash}
+                    onChange={e => setKeyHash(e.target.value)}
+                    placeholder={`Default: ${process.env.NEXT_PUBLIC_VRF_KEY_HASH} for 500 Gwei`}
+                  />
+                </Form.Group>
+                <Form.Check
+                  className="mt-3 ms-4"
+                  id="native-payment"
+                  type="switch"
+                  label="Native payment"
+                  checked={nativePayment}
+                  onChange={e => setNativePayment(e.target.checked)}
+                />
+              </>
+            )}
+            <div className="my-3 text-center">
+              <BigButton type="submit">Draw!</BigButton>
+            </div>
+          </Form>
+          <VerticalBar />
+          <h2 className="text-center text-secondary fw-bold">2. Wait for VRF</h2>
+          <VerticalBar />
+          <h2 className="text-center text-secondary fw-bold">3. Close Round</h2>
+        </>
+      )}
+    </ModalContext.Consumer>
+  );
 };
 
-const DrawManager = () => {
-  const { lottery } = useLottery();
-  const [canDraw, setCanDraw] = useState(false);
-  useEffect(() => {
-    if (!lottery) {
-      return () => {};
+const WaitVRFStage = ({ lottery }: { lottery: Lottery }) => {
+  const [requestTxId, setRequestTxId] = useState('');
+  useAsyncEffect(async () => {
+    const data = await lottery.getDrawData();
+    const { drawTxHash } = await lottery.getExtendedDrawData(data);
+    if (drawTxHash) {
+      setRequestTxId(drawTxHash);
     }
-    const checker = new AsyncChecker(lottery);
-    checker.check().then(canDraw => setCanDraw(canDraw));
-    const interval = window.setInterval(async () => {
-      setCanDraw(await checker.check());
-    }, ONE_MINUTE_MS);
-    return () => {
-      window.clearInterval(interval);
-      checker.cancel();
-    };
   }, [lottery]);
+  return (
+    <>
+      <h2 className="text-center text-secondary fw-bold">1. Trigger</h2>
+      <VerticalBar />
+      <h2 className="text-center text-primary fw-bold">2. Wait for VRF</h2>
+      {requestTxId ? (
+        <>
+          <p>
+            VRF request at{' '}
+            <Link
+              href={`https://${process.env.NEXT_PUBLIC_BLOCK_EXPLORER!}/tx/${requestTxId}`}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {requestTxId}
+            </Link>
+          </p>
+          <p>Waiting for fulfillment&hellip;</p>
+        </>
+      ) : null}
+      <VerticalBar />
+      <h2 className="text-center text-secondary fw-bold">3. Close Round</h2>
+    </>
+  );
+};
+
+const CloseRoundStage = ({ lottery }: { lottery: Lottery }) => {
+  const { account } = useWeb3React<Web3>();
+  return (
+    <ModalContext.Consumer>
+      {({ showModal }) => (
+        <>
+          <h2 className="text-center text-secondary fw-bold">1. Trigger</h2>
+          <VerticalBar />
+          <h2 className="text-center text-secondary fw-bold">2. Wait for VRF</h2>
+          <VerticalBar />
+          <h2 className="text-center text-primary fw-bold">3. Close Round</h2>
+          <div className="my-3 text-center">
+            <BigButton
+              onClick={async () => {
+                try {
+                  if (account) {
+                    await lottery.closeRound();
+                  } else {
+                    await showModal('wallet');
+                  }
+                } catch (error) {
+                  console.error(error);
+                  await showModal('message', 'Error', '' + error);
+                }
+              }}
+            >
+              Close Round
+            </BigButton>
+          </div>
+        </>
+      )}
+    </ModalContext.Consumer>
+  );
+};
+
+type DrawStage = 'round' | 'trigger' | 'wait' | 'close';
+
+const DrawManager = ({ lottery }: { lottery: Lottery }) => {
+  const [stage, setStage] = useState<DrawStage | null>(null);
+  useAsyncEffect(async () => {
+    const update = async () => {
+      if (!(await lottery.isOpen())) {
+        setStage('wait');
+      } else if (await lottery.canDraw()) {
+        setStage('trigger');
+      } else if (await lottery.isWaitingForClosure()) {
+        setStage('close');
+      } else {
+        setStage('round');
+      }
+    };
+    let destructor = () => {};
+    try {
+      const subscription = await lottery.web3.eth.subscribe('newBlockHeaders');
+      subscription.on('data', update);
+      destructor = () => {
+        subscription.removeAllListeners();
+        subscription.unsubscribe();
+      };
+    } catch {}
+    await update();
+    return destructor;
+  }, [lottery]);
+  switch (stage) {
+    case 'round':
+      return <MaybeCountdown lottery={lottery} />;
+    case 'trigger':
+      return <TriggerStage lottery={lottery} />;
+    case 'wait':
+      return <WaitVRFStage lottery={lottery} />;
+    case 'close':
+      return <CloseRoundStage lottery={lottery} />;
+    default:
+      return null;
+  }
+};
+
+const MaybeDrawManager = () => {
+  const { lottery } = useLottery();
   if (!lottery) {
-    return null;
-  } else if (canDraw) {
-    return <DrawPanel lottery={lottery} />;
+    return <p>Loading&hellip;</p>;
   } else {
-    return <MaybeCountdown lottery={lottery} />;
+    return <DrawManager lottery={lottery} />;
   }
 };
 
@@ -174,7 +333,7 @@ export default function Page() {
   return (
     <Article meta={{}}>
       <h1>Weekly Drawing</h1>
-      <DrawManager />
+      <MaybeDrawManager />
     </Article>
   );
 }

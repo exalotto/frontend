@@ -11,6 +11,7 @@ import { ModalContext } from '@/components/Modals';
 import { divideBigInts, formatBigNumber, useAsyncEffect } from '@/components/Utilities';
 
 import TokenSale from '@/components/TokenSale.json';
+import { BigButton } from '@/components/BigButton';
 
 // 1 EXL in wei, i.e. 1e18.
 const DECIMALS = 1000000000000000000n;
@@ -176,16 +177,15 @@ const FormContent = ({ ico }: { ico: Contract<typeof TokenSale.abi> }) => {
           </Row>
           <Row>
             <Form.Group as={Col} className="mx-sm-3">
-              <button type="submit" disabled={!saleOpen} className="btn btn-details mb-4">
-                <span className="btn-details__text">Buy EXL</span>
-                <span className="btn-details__shadow"></span>
-              </button>
+              <BigButton type="submit" disabled={!saleOpen} className="mb-4">
+                Buy EXL
+              </BigButton>
             </Form.Group>
             <Form.Group as={Col} className="mx-sm-3">
-              <button
+              <BigButton
                 type="button"
                 disabled={saleOpen || !balance}
-                className="btn btn-details mb-4"
+                className="mb-4"
                 onClick={async () => {
                   if (account) {
                     await ico.methods.withdrawAll().send({ from: account });
@@ -194,9 +194,8 @@ const FormContent = ({ ico }: { ico: Contract<typeof TokenSale.abi> }) => {
                   }
                 }}
               >
-                <span className="btn-details__text">Redeem EXL</span>
-                <span className="btn-details__shadow"></span>
-              </button>
+                Redeem EXL
+              </BigButton>
             </Form.Group>
           </Row>
         </Form>

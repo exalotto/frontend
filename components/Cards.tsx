@@ -1,6 +1,7 @@
 import { PropsWithChildren } from 'react';
 
 import Web3 from 'web3';
+import { BigButton } from './BigButton';
 
 function formatNumber(value: number): string {
   return ('0' + value).slice(-2);
@@ -32,10 +33,9 @@ const Card = ({
         <div className="draws__main">{children}</div>
         {onAction ? (
           <div className="draws__buttons">
-            <button disabled={!actionEnabled} className="btn btn-details" onClick={onAction}>
-              <span className="btn-details__text">{actionTitle}</span>
-              <span className="btn-details__shadow"></span>
-            </button>
+            <BigButton disabled={!actionEnabled} onClick={onAction}>
+              {actionTitle}
+            </BigButton>
           </div>
         ) : null}
       </div>

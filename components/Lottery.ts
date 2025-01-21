@@ -268,6 +268,10 @@ export class Lottery {
     return await this._lotteryContract.methods.paused().call();
   }
 
+  public async isOpen(): Promise<boolean> {
+    return await this._lotteryContract.methods.isOpen().call();
+  }
+
   public async getJackpot(): Promise<bigint> {
     return this._web3.utils.toBigInt(await this._lotteryContract.methods.getJackpot().call());
   }
@@ -617,6 +621,11 @@ export class Lottery {
     await controller.methods
       .draw(settings.vrfSubscriptionId, settings.vrfKeyHash, !!settings.nativePayment)
       .send({ from });
+  }
+
+  public async isWaitingForClosure(): Promise<boolean> {
+    const controller = await this._controllerContract.get();
+    return await controller.methods.waitingForClosure().call();
   }
 
   public async closeRound(signer?: string): Promise<void> {

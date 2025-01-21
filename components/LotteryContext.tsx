@@ -48,6 +48,6 @@ export const LotteryContextProvider = ({ children }: PropsWithChildren) => {
     } else {
       setLottery(null);
     }
-  }, [context, context.active, context.library, context.account]);
+  }, [context.active, context.library, context.account]);
   return <LotteryContext.Provider value={{ context, lottery }}>{children}</LotteryContext.Provider>;
 };
