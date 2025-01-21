@@ -123,7 +123,7 @@ export interface Draw {
   date: Date;
   round: number;
   drawBlock: number;
-  closureBlock: number;
+  fulfillmentBlock: number;
   prizes: bigint[];
   stash: bigint;
   numbers: number[];
@@ -133,7 +133,7 @@ export interface Draw {
 
 export interface DrawExtended extends Draw {
   drawTxHash?: string;
-  closureTxHash?: string;
+  fulfillmentTxHash?: string;
 }
 
 export interface Ticket {
@@ -229,7 +229,7 @@ export class Lottery {
     return this._defaultSigner;
   }
 
-  public get lottery(): LotteryContract {
+  public get contract(): LotteryContract {
     return this._lotteryContract;
   }
 
@@ -659,7 +659,7 @@ export class Lottery {
       date: new Date((this._web3.utils.toNumber(timestamp) as number) * 1000),
       round: round,
       drawBlock: this._web3.utils.toNumber(drawBlockNumber) as number,
-      closureBlock: this._web3.utils.toNumber(closureBlockNumber) as number,
+      fulfillmentBlock: this._web3.utils.toNumber(closureBlockNumber) as number,
       prizes: prizes.map(prize => this._web3.utils.toBigInt(prize)),
       stash: this._web3.utils.toBigInt(stash),
       numbers: numbers.map(number => this._web3.utils.toNumber(number) as number),
@@ -670,7 +670,7 @@ export class Lottery {
 
   public async getExtendedDrawData(draw: Draw): Promise<DrawExtended> {
     const result: DrawExtended = { ...draw };
-    const [drawResults, closureResults] = await Promise.all([
+    const [drawResults, fulfillmentResults] = await Promise.all([
       this._lotteryContract.getPastEvents('VRFRequest' as never, {
         filter: { round: draw.round },
         fromBlock: draw.drawBlock,
@@ -678,15 +678,15 @@ export class Lottery {
       }) as Promise<EventLog[]>,
       this._lotteryContract.getPastEvents('Draw' as never, {
         filter: { round: draw.round },
-        fromBlock: draw.closureBlock,
-        toBlock: draw.closureBlock,
+        fromBlock: draw.fulfillmentBlock,
+        toBlock: draw.fulfillmentBlock,
       }) as Promise<EventLog[]>,
     ]);
     if (drawResults.length > 0) {
       result.drawTxHash = drawResults[0].transactionHash;
     }
-    if (closureResults.length > 0) {
-      result.closureTxHash = closureResults[0].transactionHash;
+    if (fulfillmentResults.length > 0) {
+      result.fulfillmentTxHash = fulfillmentResults[0].transactionHash;
     }
     return result;
   }

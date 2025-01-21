@@ -405,7 +405,8 @@ export const ReceiptModal = () => (
             <div className="transactions-final__line"></div>
             <div className="transactions-final__address">
               <div className="transactions-final__address-title">
-                Your tickets are listed in the "My Tickets" page. Remember to connect your wallet.
+                Your tickets are listed in the &quot;My Tickets&quot; page. Remember to connect your
+                wallet.
               </div>
             </div>
           </div>

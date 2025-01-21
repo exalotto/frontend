@@ -118,28 +118,28 @@ const DrawCard = ({ draw }: { draw: DrawExtended }) => (
       >
         <Card.Jackpot jackpot={draw.prizes[4]} />
         <Card.Numbers title="Drawn Numbers" numbers={draw.numbers} />
-        {draw.drawTxHash && draw.closureTxHash ? (
+        {draw.drawTxHash && draw.fulfillmentTxHash ? (
           <div className="prize">
             <div className="prize__title"></div>
             <div className="prize__transaction">
               VRF request:{' '}
-              <a
+              <Link
                 href={`https://${process.env.NEXT_PUBLIC_BLOCK_EXPLORER}/tx/${draw.drawTxHash}`}
                 target="_blank"
                 rel="noreferrer"
               >
                 {draw.drawTxHash}
-              </a>
+              </Link>
             </div>
             <div className="prize__transaction">
               VRF fulfillment:{' '}
-              <a
-                href={`https://${process.env.NEXT_PUBLIC_BLOCK_EXPLORER}/tx/${draw.closureTxHash}`}
+              <Link
+                href={`https://${process.env.NEXT_PUBLIC_BLOCK_EXPLORER}/tx/${draw.fulfillmentTxHash}`}
                 target="_blank"
                 rel="noreferrer"
               >
-                {draw.closureTxHash}
-              </a>
+                {draw.fulfillmentTxHash}
+              </Link>
             </div>
           </div>
         ) : null}
