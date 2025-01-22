@@ -7,17 +7,68 @@ import type { Contract, Web3 } from 'web3';
 
 import { useWeb3React } from '@web3-react/core';
 
-import { ModalContext } from '@/components/Modals';
+import { BigButton } from '@/components/BigButton';
+import { useModals } from '@/components/Modals';
 import { divideBigInts, formatBigNumber, useAsyncEffect } from '@/components/Utilities';
 
+import DaiPermit from '@/components/DaiPermit.json';
+import ERC20 from '@/components/ERC20.json';
 import TokenSale from '@/components/TokenSale.json';
-import { BigButton } from '@/components/BigButton';
 
 // 1 EXL in wei, i.e. 1e18.
 const DECIMALS = 1000000000000000000n;
 
 // Total EXL supply in EXL-wei (1e27).
 const TOTAL_SUPPLY = 1000000000000000000000000000n;
+
+const ONE_DAY_IN_SECONDS = 60 * 60 * 24;
+
+async function signDaiPermit(web3: Web3, ico: Contract<typeof TokenSale.abi>, signer: string) {
+  const currencyTokenAddress = (await ico.methods.currencyToken().call()) as string;
+  const currencyToken = new web3.eth.Contract(ERC20.abi, currencyTokenAddress);
+  const permit = new web3.eth.Contract(DaiPermit.abi, currencyTokenAddress);
+  const domain = {
+    name: '' + (await currencyToken.methods.name().call()),
+    version: '1',
+    verifyingContract: currencyToken.options.address!,
+    salt: web3.utils.padLeft(web3.utils.toBigInt(await web3.eth.getChainId()), 64),
+  };
+  const nonce = web3.utils.toBigInt(await permit.methods.getNonce(signer).call());
+  const { timestamp } = await web3.eth.getBlock();
+  const expiry = Number(timestamp) + ONE_DAY_IN_SECONDS;
+  const message = {
+    holder: signer,
+    spender: ico.options.address!,
+    nonce: nonce.toString(10),
+    expiry,
+    allowed: true,
+  };
+  const typedData = {
+    domain,
+    message,
+    primaryType: 'Permit',
+    types: {
+      EIP712Domain: [
+        { name: 'name', type: 'string' },
+        { name: 'version', type: 'string' },
+        { name: 'verifyingContract', type: 'address' },
+        { name: 'salt', type: 'bytes32' },
+      ],
+      Permit: [
+        { name: 'holder', type: 'address' },
+        { name: 'spender', type: 'address' },
+        { name: 'nonce', type: 'uint256' },
+        { name: 'expiry', type: 'uint256' },
+        { name: 'allowed', type: 'bool' },
+      ],
+    },
+  };
+  const signature = await web3.eth.signTypedData(signer, typedData);
+  const r = signature.slice(0, 66);
+  const s = '0x' + signature.slice(66, 130);
+  const v = parseInt(signature.slice(130, 132), 16);
+  return { nonce, expiry, r, s, v };
+}
 
 const FormContent = ({ ico }: { ico: Contract<typeof TokenSale.abi> }) => {
   const { library, account } = useWeb3React<Web3>();
@@ -33,6 +84,7 @@ const FormContent = ({ ico }: { ico: Contract<typeof TokenSale.abi> }) => {
   const [exlAmount, setExlAmount] = useState(0n);
   const [shareText, setShareText] = useState('0');
   const [, setShare] = useState(0);
+  const { showModal } = useModals();
   const updateDai = (daiText: string) => {
     setDaiText(daiText);
     const daiAmount = toWei(daiText);
@@ -98,109 +150,108 @@ const FormContent = ({ ico }: { ico: Contract<typeof TokenSale.abi> }) => {
   useEffect(() => {
     updateShare('1');
     // eslint-disable-next-line
-  }, [price]);
+  }, [web3, price]);
   return (
-    <ModalContext.Consumer>
-      {({ showModal }) => (
-        <Form
-          className="mb-1"
-          onSubmit={async e => {
-            e.preventDefault();
-            if (!(e.target as HTMLFormElement).checkValidity()) {
-              return;
-            }
-            if (account) {
-              await ico.methods.buyTokens(exlAmount).send({ from: account });
-            } else {
-              showModal('wallet');
-            }
-          }}
-        >
-          <Form.Group as={Row} className="mx-sm-3 mb-3">
-            <Form.Label column sm={3}>
-              Current EXL price:
-            </Form.Label>
-            <Col>
-              <Form.Control
-                type="static"
-                disabled
-                value={price ? `${formatBigNumber(web3, price)} Dai` : ''}
-              />
-            </Col>
-          </Form.Group>
-          {balance !== null ? (
-            <Form.Group as={Row} className="mx-sm-3 mb-3">
-              <Form.Label column sm={3}>
-                Your EXL balance:
-              </Form.Label>
-              <Col>
-                <Form.Control
-                  type="static"
-                  disabled
-                  value={balance !== null ? `${formatBigNumber(web3, balance)} EXL` : ''}
-                />
-              </Col>
-            </Form.Group>
-          ) : null}
-          <Row className="mb-4">
-            <Form.Group as={Col} className="mx-sm-3">
-              <Form.Label>Dai</Form.Label>
-              <Form.Control
-                type="text"
-                disabled={price === null}
-                required
-                pattern="[0-9]*(\.[0-9]*)?"
-                value={daiText}
-                onChange={({ target }) => updateDai(target.value)}
-              />
-            </Form.Group>
-            <Form.Group as={Col} className="mx-sm-3">
-              <Form.Label>EXL</Form.Label>
-              <Form.Control
-                type="text"
-                disabled={price === null}
-                pattern="[0-9]*(\.[0-9]*)?"
-                value={exlText}
-                onChange={({ target }) => updateExl(target.value)}
-              />
-            </Form.Group>
-            <Form.Group as={Col} className="mx-sm-3">
-              <Form.Label>Share (%)</Form.Label>
-              <Form.Control
-                type="text"
-                disabled={price === null}
-                pattern="[0-9]*(\.[0-9]*)?"
-                value={shareText}
-                onChange={({ target }) => updateShare(target.value)}
-              />
-            </Form.Group>
-          </Row>
-          <Row>
-            <Form.Group as={Col} className="mx-sm-3">
-              <BigButton type="submit" disabled={!saleOpen} className="mb-4">
-                Buy EXL
-              </BigButton>
-            </Form.Group>
-            <Form.Group as={Col} className="mx-sm-3">
-              <BigButton
-                type="button"
-                disabled={saleOpen || !balance}
-                className="mb-4"
-                onClick={async () => {
-                  if (account) {
-                    await ico.methods.withdrawAll().send({ from: account });
-                  } else {
-                    showModal('wallet');
-                  }
-                }}
-              >
-                Redeem EXL
-              </BigButton>
-            </Form.Group>
-          </Row>
-        </Form>
-      )}
-    </ModalContext.Consumer>
+    <Form
+      className="mb-1"
+      onSubmit={async e => {
+        e.preventDefault();
+        if (!(e.target as HTMLFormElement).checkValidity()) {
+          return;
+        }
+        if (account) {
+          const { nonce, expiry, r, s, v } = await signDaiPermit(web3, ico, account);
+          await ico.methods
+            .purchaseWithDai(exlAmount, nonce, expiry, v, r, s)
+            .send({ from: account });
+        } else {
+          showModal('wallet');
+        }
+      }}
+    >
+      <Form.Group as={Row} className="mx-sm-3 mb-3">
+        <Form.Label column sm={3}>
+          Current EXL price:
+        </Form.Label>
+        <Col>
+          <Form.Control
+            type="static"
+            disabled
+            value={price ? `${formatBigNumber(web3, price)} Dai` : ''}
+          />
+        </Col>
+      </Form.Group>
+      {balance !== null ? (
+        <Form.Group as={Row} className="mx-sm-3 mb-3">
+          <Form.Label column sm={3}>
+            Your EXL balance:
+          </Form.Label>
+          <Col>
+            <Form.Control
+              type="static"
+              disabled
+              value={balance !== null ? `${formatBigNumber(web3, balance)} EXL` : ''}
+            />
+          </Col>
+        </Form.Group>
+      ) : null}
+      <Row className="mb-4">
+        <Form.Group as={Col} className="mx-sm-3">
+          <Form.Label>Dai</Form.Label>
+          <Form.Control
+            type="text"
+            disabled={price === null}
+            required
+            pattern="[0-9]*(\.[0-9]*)?"
+            value={daiText}
+            onChange={({ target }) => updateDai(target.value)}
+          />
+        </Form.Group>
+        <Form.Group as={Col} className="mx-sm-3">
+          <Form.Label>EXL</Form.Label>
+          <Form.Control
+            type="text"
+            disabled={price === null}
+            pattern="[0-9]*(\.[0-9]*)?"
+            value={exlText}
+            onChange={({ target }) => updateExl(target.value)}
+          />
+        </Form.Group>
+        <Form.Group as={Col} className="mx-sm-3">
+          <Form.Label>Share (%)</Form.Label>
+          <Form.Control
+            type="text"
+            disabled={price === null}
+            pattern="[0-9]*(\.[0-9]*)?"
+            value={shareText}
+            onChange={({ target }) => updateShare(target.value)}
+          />
+        </Form.Group>
+      </Row>
+      <Row>
+        <Form.Group as={Col} className="mx-sm-3">
+          <BigButton type="submit" disabled={!saleOpen} className="mb-4">
+            Buy EXL
+          </BigButton>
+        </Form.Group>
+        <Form.Group as={Col} className="mx-sm-3">
+          <BigButton
+            type="button"
+            disabled={saleOpen || !balance}
+            className="mb-4"
+            onClick={async () => {
+              if (account) {
+                await ico.methods.withdrawAll().send({ from: account });
+              } else {
+                showModal('wallet');
+              }
+            }}
+          >
+            Redeem EXL
+          </BigButton>
+        </Form.Group>
+      </Row>
+    </Form>
   );
 };
 
