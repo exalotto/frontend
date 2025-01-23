@@ -227,8 +227,8 @@ const TriggerStage = () => {
 const WaitVRFStage = ({ lottery }: { lottery: Lottery }) => {
   const [requestTxId, setRequestTxId] = useState('');
   useAsyncEffect(async () => {
-    const data = await lottery.getDrawData();
-    const { drawTxHash } = await lottery.getExtendedDrawData(data);
+    const data = await lottery.getPartialDrawData();
+    const { drawTxHash } = await lottery.getExtendedPartialDrawData(data);
     if (drawTxHash) {
       setRequestTxId(drawTxHash);
     }

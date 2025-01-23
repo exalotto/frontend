@@ -473,29 +473,11 @@ export class Lottery {
     const { nonce, deadline, r, s, v } = await this._signDaiPermit(from);
     if (numbers.length > 6) {
       return await this._lotteryContract.methods
-        .createTicketWithDaiPermit(
-          Lottery.NULL_REFERRAL_CODE,
-          numbers,
-          nonce,
-          deadline,
-          /*allowed=*/ true,
-          v,
-          r,
-          s,
-        )
+        .createTicketWithDaiPermit(Lottery.NULL_REFERRAL_CODE, numbers, nonce, deadline, v, r, s)
         .send({ from });
     } else {
       return await this._lotteryContract.methods
-        .createTicket6WithDaiPermit(
-          Lottery.NULL_REFERRAL_CODE,
-          numbers,
-          nonce,
-          deadline,
-          /*allowed=*/ true,
-          v,
-          r,
-          s,
-        )
+        .createTicket6WithDaiPermit(Lottery.NULL_REFERRAL_CODE, numbers, nonce, deadline, v, r, s)
         .send({ from });
     }
   }
@@ -687,6 +669,46 @@ export class Lottery {
     }
     if (fulfillmentResults.length > 0) {
       result.fulfillmentTxHash = fulfillmentResults[0].transactionHash;
+    }
+    return result;
+  }
+
+  public async getPartialDrawData(): Promise<Draw> {
+    const {
+      prizes,
+      stash,
+      totalCombinations,
+      drawBlockNumber,
+    }: {
+      prizes: string[];
+      stash: string;
+      totalCombinations: string;
+      drawBlockNumber: string;
+      vrfRequestId: string;
+    } = await this._lotteryContract.methods.getCurrentRoundData().call();
+    const { timestamp } = await this._web3.eth.getBlock(drawBlockNumber);
+    return {
+      date: new Date((this._web3.utils.toNumber(timestamp) as number) * 1000),
+      round: await this.getCurrentRound(),
+      drawBlock: this._web3.utils.toNumber(drawBlockNumber) as number,
+      fulfillmentBlock: 0,
+      prizes: prizes.map(prize => this._web3.utils.toBigInt(prize)),
+      stash: this._web3.utils.toBigInt(stash),
+      numbers: [],
+      totalCombinations: this._web3.utils.toNumber(totalCombinations) as number,
+      winners: [],
+    };
+  }
+
+  public async getExtendedPartialDrawData(draw: Draw): Promise<DrawExtended> {
+    const result: DrawExtended = { ...draw };
+    const results = (await this._lotteryContract.getPastEvents('VRFRequest' as never, {
+      filter: { round: draw.round },
+      fromBlock: draw.drawBlock,
+      toBlock: draw.drawBlock,
+    })) as EventLog[];
+    if (results.length > 0) {
+      result.drawTxHash = results[0].transactionHash;
     }
     return result;
   }
