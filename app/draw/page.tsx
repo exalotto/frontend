@@ -25,7 +25,31 @@ function padLeft(value: number): string {
   }
 }
 
-const Countdown = ({ nextStart }: { nextStart: Date }) => {
+const Waiter = ({ lottery }: { lottery: Lottery }) => {
+  const [controller, setController] = useState<ControllerContract | null>(null);
+  useAsyncEffect(async () => {
+    setController(await lottery.getController());
+  }, [lottery]);
+  return (
+    <>
+      <p>Waiting for smartcontract...</p>
+      {controller ? (
+        <p>
+          <Link
+            href={`https://${process.env.NEXT_PUBLIC_BLOCK_EXPLORER}/address/${controller.options
+              .address!}#readContract#F5`}
+            rel="noreferrer"
+            target="_blank"
+          >
+            Check manually
+          </Link>
+        </p>
+      ) : null}
+    </>
+  );
+};
+
+const Countdown = ({ lottery, nextStart }: { lottery: Lottery; nextStart: Date }) => {
   const [remaining, setRemaining] = useState(nextStart.getTime() - Date.now());
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -35,8 +59,9 @@ const Countdown = ({ nextStart }: { nextStart: Date }) => {
       window.clearInterval(interval);
     };
   }, [nextStart]);
-  if (!nextStart) {
-    return null;
+  if (nextStart.getTime() < Date.now()) {
+    // The drawing window has started but `canDraw` hasn't returned True yet.
+    return <Waiter lottery={lottery} />;
   }
   const getDays = () => Math.floor(remaining / ONE_DAY_MS);
   const getHours = () => Math.floor((remaining % ONE_DAY_MS) / ONE_HOUR_MS);
@@ -62,42 +87,15 @@ const Countdown = ({ nextStart }: { nextStart: Date }) => {
   );
 };
 
-const Waiter = ({ lottery }: { lottery: Lottery }) => {
-  const [controller, setController] = useState<ControllerContract | null>(null);
-  useAsyncEffect(async () => {
-    setController(await lottery.getController());
-  }, [lottery]);
-  return (
-    <>
-      <p>Waiting for smartcontract...</p>
-      {controller ? (
-        <p>
-          <Link
-            href={`https://${process.env.NEXT_PUBLIC_BLOCK_EXPLORER}/address/${controller.options
-              .address!}#readContract#F5`}
-            rel="noreferrer"
-            target="_blank"
-          >
-            Check manually
-          </Link>
-        </p>
-      ) : null}
-    </>
-  );
-};
-
 const MaybeCountdown = ({ lottery }: { lottery: Lottery }) => {
   const [nextStart, setNextStart] = useState<Date | null>(null);
   useAsyncEffect(async () => {
     setNextStart(await lottery.getTimeOfNextDraw());
   }, [lottery]);
   if (!nextStart) {
-    return null;
-  } else if (Date.now() < nextStart.getTime()) {
-    return <Countdown nextStart={nextStart} />;
+    return <p>Loading&hellip;</p>;
   } else {
-    // The drawing window has started but `canDraw` hasn't returned True yet.
-    return <Waiter lottery={lottery} />;
+    return <Countdown lottery={lottery} nextStart={nextStart} />;
   }
 };
 
