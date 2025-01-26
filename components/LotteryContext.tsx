@@ -40,22 +40,24 @@ function sanitizeSpendingApprovalMode(): SpendingApprovalMode {
 }
 
 export const LotteryContextProvider = ({ children }: PropsWithChildren) => {
+  const requiredChainId = parseInt(process.env.NEXT_PUBLIC_NETWORK_ID!, 10);
   const web3Context = useWeb3React<Web3>();
+  const { active, chainId, library, account } = web3Context;
   const [lotteryContext, setLotteryContext] = useState<LotteryContext>(NULL_CONTEXT);
   useEffect(() => {
-    if (web3Context.active && web3Context.library) {
+    if (active && library && chainId === requiredChainId) {
       setLotteryContext({
         context: web3Context,
         lottery: new Lottery({
-          web3: web3Context.library,
+          web3: library,
           lotteryAddress: process.env.NEXT_PUBLIC_LOTTERY_ADDRESS!,
-          defaultSigner: web3Context.account || void 0,
+          defaultSigner: account || void 0,
           defaultSpendingApprovalMode: sanitizeSpendingApprovalMode(),
         }),
       });
     } else {
       setLotteryContext(NULL_CONTEXT);
     }
-  }, [web3Context, web3Context?.active, web3Context?.library, web3Context?.account]);
+  }, [web3Context, active, chainId, requiredChainId, library, account]);
   return <LotteryContext.Provider value={lotteryContext}>{children}</LotteryContext.Provider>;
 };

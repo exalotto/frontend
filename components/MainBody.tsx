@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from 'react';
 
-import { WalletModal } from './Connection';
+import { WalletModal, WrongNetworkMessage } from './Connection';
 import { ReceiptModal } from './LuckyFrame';
 import { MessageModal, ModalContainer } from './Modals';
 import { DrawModal } from './PastDraws';
@@ -15,6 +15,7 @@ export const MainBody = ({ children }: PropsWithChildren) => (
       <ReceiptModal />
       <MessageModal />
       <PrivacyPolicyOverlay />
+      <WrongNetworkMessage />
     </ModalContainer>
   </div>
 );

@@ -1,6 +1,6 @@
 'use client';
 
-import type { PropsWithChildren } from 'react';
+import { useEffect, useState, type PropsWithChildren } from 'react';
 
 import type { StaticImageData } from 'next/image';
 import Image from 'next/image';
@@ -14,7 +14,13 @@ import { NetworkConnector } from '@web3-react/network-connector';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { WalletConnectConnector } from '@web3-react/walletconnect-connector';
 
-import { type MessageModalParams, Modal, type ModalStateInstance, useModals } from './Modals';
+import {
+  type MessageModalParams,
+  Modal,
+  type ModalStateInstance,
+  RawModal,
+  useModals,
+} from './Modals';
 
 import metaMaskLogo from '@/images/metamask.png';
 import walletConnectLogo from '@/images/walletconnect.png';
@@ -49,6 +55,21 @@ export const ConnectionProvider = ({ children }: PropsWithChildren) => (
     <ConnectWeb3>{children}</ConnectWeb3>
   </Web3ReactProvider>
 );
+
+export const WrongNetworkMessage = (props: object) => {
+  const expected = parseInt(process.env.NEXT_PUBLIC_NETWORK_ID!, 10);
+  const { active, chainId } = useWeb3React();
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    setShow(active && chainId !== expected);
+  }, [active, chainId, expected]);
+  return (
+    <RawModal show={show} title="Error" dialogClassName="modal-dialog-sm modal-wallet" {...props}>
+      You are connected to the wrong network (ID: {chainId}). ExaLotto runs on Polygon PoS (ID:{' '}
+      {expected}), please switch.
+    </RawModal>
+  );
+};
 
 const WalletButton = ({
   name,

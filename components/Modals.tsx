@@ -3,7 +3,7 @@
 import type { PropsWithChildren, ReactNode } from 'react';
 import React, { useContext, useEffect, useState } from 'react';
 
-import { Modal as BSModal } from 'react-bootstrap';
+import { Modal as BSModal, type ModalProps } from 'react-bootstrap';
 
 export interface ModalState {
   name?: string;
@@ -34,11 +34,11 @@ function makeModalState(state: ModalState, setState: ModalStateMutator): ModalSt
 
 const initialModalState: ModalState = {
   params: [],
-  resolve: () => {},
-  reject: () => {},
+  resolve() {},
+  reject() {},
   visible: false,
-  showModal: async () => {},
-  hideModal: () => {},
+  async showModal() {},
+  hideModal() {},
 };
 
 export const ModalContext = React.createContext<ModalState>(initialModalState);
@@ -56,6 +56,50 @@ export type TitleMutator = (newTitle: string) => void;
 export type ModalConsumer<Params extends unknown[]> = (
   modalState: ModalStateInstance<Params>,
 ) => ReactNode;
+
+export function RawModal({
+  title,
+  onClose,
+  children,
+  ...props
+}: ModalProps & {
+  title: string;
+  onClose?: () => void;
+}): ReactNode {
+  return (
+    <BSModal centered onHide={onClose} {...props}>
+      {onClose ? <button type="button" className="btn btn-close-custom" onClick={onClose} /> : null}
+      <div className="modal-shadow">
+        <div className="modal-shadow__title">
+          <div className="one-row-title">
+            <div className="one-row-title__top-frame">
+              <div className="one-row-title__top-frame-clip"></div>
+            </div>
+            <div className="one-row-title__frame">
+              <div className="one-row-title__frame-in">
+                <div className="one-row-title__main-text">{title}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="modal-clip">
+          <div className="modal-content-wrapper">
+            <div className="modal-inside">{children}</div>
+            <div className="modal-clip__lines">
+              <span className="modal-clip__line1"></span>
+              <span className="modal-clip__line2"></span>
+              <span className="modal-clip__line3"></span>
+              <span className="modal-clip__line4"></span>
+              <span className="modal-clip__line5"></span>
+              <span className="modal-clip__line6"></span>
+            </div>
+          </div>
+        </div>
+        <div className="modal-behind"></div>
+      </div>
+    </BSModal>
+  );
+}
 
 export function Modal<Params extends unknown[]>({
   name,
@@ -89,11 +133,9 @@ export function Modal<Params extends unknown[]>({
         showModal,
         hideModal,
       }: ModalState) => (
-        <BSModal
-          show={visible && currentName === name}
-          centered
-          dialogClassName={className || ''}
-          onHide={() => {
+        <RawModal
+          title={mutableTitle}
+          onClose={() => {
             hideModal();
             if (resolveOnHide) {
               resolve();
@@ -101,60 +143,21 @@ export function Modal<Params extends unknown[]>({
               reject(Error('user cancelled'));
             }
           }}
+          show={visible && currentName === name}
+          dialogClassName={className || ''}
         >
-          <button
-            type="button"
-            className="btn btn-close-custom"
-            onClick={() => {
-              hideModal();
-              if (resolveOnHide) {
-                resolve();
-              } else {
-                reject(Error('user cancelled'));
-              }
-            }}
-          />
-          <div className="modal-shadow">
-            <div className="modal-shadow__title">
-              <div className="one-row-title">
-                <div className="one-row-title__top-frame">
-                  <div className="one-row-title__top-frame-clip"></div>
-                </div>
-                <div className="one-row-title__frame">
-                  <div className="one-row-title__frame-in">
-                    <div className="one-row-title__main-text">{mutableTitle}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="modal-clip">
-              <div className="modal-content-wrapper">
-                <div className="modal-inside">
-                  {currentName !== name
-                    ? null
-                    : children({
-                        name,
-                        params: (deferTitle ? params.concat(setTitle) : params) as Params,
-                        resolve,
-                        reject,
-                        visible,
-                        showModal,
-                        hideModal,
-                      })}
-                </div>
-                <div className="modal-clip__lines">
-                  <span className="modal-clip__line1"></span>
-                  <span className="modal-clip__line2"></span>
-                  <span className="modal-clip__line3"></span>
-                  <span className="modal-clip__line4"></span>
-                  <span className="modal-clip__line5"></span>
-                  <span className="modal-clip__line6"></span>
-                </div>
-              </div>
-            </div>
-            <div className="modal-behind"></div>
-          </div>
-        </BSModal>
+          {currentName !== name
+            ? null
+            : children({
+                name,
+                params: (deferTitle ? params.concat(setTitle) : params) as Params,
+                resolve,
+                reject,
+                visible,
+                showModal,
+                hideModal,
+              })}
+        </RawModal>
       )}
     </ModalContext.Consumer>
   );
