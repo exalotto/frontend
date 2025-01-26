@@ -1,6 +1,6 @@
 'use client';
 
-import React, { PropsWithChildren, useContext, useEffect, useState } from 'react';
+import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
 import type Web3 from 'web3';
 
@@ -24,7 +24,7 @@ const NULL_CONTEXT: LotteryContext = {
   lottery: null,
 };
 
-export const LotteryContext = React.createContext<LotteryContext>(NULL_CONTEXT);
+export const LotteryContext = createContext<LotteryContext>(NULL_CONTEXT);
 
 export const useLottery = () => useContext(LotteryContext);
 

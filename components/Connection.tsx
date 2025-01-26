@@ -33,11 +33,11 @@ class Web3Error extends Error {
 }
 
 const ConnectWeb3 = ({ children }: PropsWithChildren) => {
-  const context = useWeb3React();
+  const { connector, activate } = useWeb3React();
   const chainId = parseInt(process.env.NEXT_PUBLIC_NETWORK_ID!, 10);
   useAsyncEffect(async () => {
-    if (!context.connector) {
-      await context.activate(
+    if (!connector) {
+      await activate(
         new NetworkConnector({
           urls: {
             [chainId]: process.env.NEXT_PUBLIC_RPC_URL!,
@@ -46,7 +46,7 @@ const ConnectWeb3 = ({ children }: PropsWithChildren) => {
         }),
       );
     }
-  }, [context, chainId]);
+  }, [connector, activate, chainId]);
   return children;
 };
 
@@ -129,11 +129,7 @@ export const WalletModal = () => {
           <WalletButton
             name="MetaMask"
             logo={metaMaskLogo}
-            createConnector={() =>
-              new InjectedConnector({
-                supportedChainIds: [chainId],
-              })
-            }
+            createConnector={() => new InjectedConnector({})}
             onConnect={() => {
               hideModal();
               resolve();
